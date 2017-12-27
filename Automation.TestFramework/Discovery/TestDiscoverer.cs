@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Automation.TestFramework.Entities;
 using Xunit.Abstractions;
+using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Discovery
 {

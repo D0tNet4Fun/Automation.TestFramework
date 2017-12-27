@@ -5,8 +5,10 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Automation.TestFramework.Discovery;
+using Automation.TestFramework.Entities;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Execution
 {

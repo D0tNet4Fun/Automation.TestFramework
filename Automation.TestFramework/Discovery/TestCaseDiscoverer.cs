@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using Automation.TestFramework.Entities;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Automation.TestFramework.Discovery
