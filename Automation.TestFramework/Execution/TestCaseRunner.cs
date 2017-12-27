@@ -65,16 +65,21 @@ namespace Automation.TestFramework.Execution
             runSummary.Aggregate(await RunTestCaseComponents());
 
             // run the summary last
-            var runner = CreateTestRunner(_test, TestCase.Method);
+            Exception exception = null;
+            if (runSummary.Failed > 0)
+            {
+                exception = new TestCaseFailedException("The test case steps were not completed successfully.");
+            }
+            var runner = CreateTestRunner(_test, TestCase.Method, exception: exception);
             runSummary.Aggregate(await runner.RunAsync());
 
             return runSummary;
         }
 
-        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null, Exception exception = null)
         {
             var method = (testMethod as IReflectionMethodInfo).MethodInfo;
-            return new TestRunner(_testClassInstance, test, MessageBus, TestClass, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource);
+            return new TestRunner(_testClassInstance, test, MessageBus, TestClass, method, skipReason, exception, new ExceptionAggregator(Aggregator), CancellationTokenSource);
         }
 
         private async Task<RunSummary> RunTestCaseComponents()
