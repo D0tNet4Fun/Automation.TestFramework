@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Automation.TestFramework.Discovery;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -9,7 +9,9 @@ namespace Automation.TestFramework
         public Framework(IMessageSink messageSink)
             : base(messageSink)
         {
-            messageSink.OnMessage(new DiagnosticMessage("Hello world"));
         }
+
+        protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
+            => new FrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink);
     }
 }
