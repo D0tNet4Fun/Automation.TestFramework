@@ -1,11 +1,13 @@
 ﻿using System;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Automation.TestFramework
 {
     /// <summary>
     /// Identifies a test method as the summary of a test case.
     /// </summary>
+    [XunitTestCaseDiscoverer("Automation.TestFramework.Discovery.TestCaseDiscoverer", "Automation.TestFramework")]
     public class SummaryAttribute : FactAttribute
     {
         private readonly string _description;
