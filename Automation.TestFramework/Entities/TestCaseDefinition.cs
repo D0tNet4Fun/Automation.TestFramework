@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Xunit.Abstractions;
 
@@ -62,6 +61,22 @@ namespace Automation.TestFramework.Entities
                     _testSteps[index].ExpectedResult = test;
                 }
             }
+
+            // update the display names of the tests
+            var testIndex = 0;
+            var testCount = testCaseComponents.Count;
+            foreach (var precondition in _preconditions)
+            {
+                UpdateTestDisplayName(precondition, ++testIndex, testCount);
+            }
+            foreach (var testStep in _testSteps)
+            {
+                UpdateTestDisplayName(testStep.Input, ++testIndex, testCount);
+                if (testStep.ExpectedResult != null)
+                {
+                    UpdateTestDisplayName(testStep.ExpectedResult, ++testIndex, testCount);
+                }
+            }
         }
 
         private IEnumerable<IMethodInfo> GetTestMethods()
@@ -70,10 +85,9 @@ namespace Automation.TestFramework.Entities
         }
 
         private ITest CreateTest(IMethodInfo testMethod, TestCaseComponentAttribute attribute)
-        {
-            // create a test from this test method and assign it to the test case
-            var displayName = attribute.DisplayName;
-            return new Test(_testCase, testMethod, displayName);
-        }
+            => new Test(_testCase, testMethod, attribute.DisplayName); // assign the test to the test case
+
+        private void UpdateTestDisplayName(ITest test, int index, int count)
+            => test.DisplayName = $"[{index}/{count}] {test.DisplayName}";
     }
 }
