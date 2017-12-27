@@ -1,17 +1,27 @@
-﻿namespace Automation.TestFramework
+﻿using System;
+using Xunit;
+
+namespace Automation.TestFramework
 {
     /// <summary>
     /// Identifies a test method as the summary of a test case.
     /// </summary>
-    public class SummaryAttribute : TestCaseComponentAttribute
+    public class SummaryAttribute : FactAttribute
     {
-        public SummaryAttribute(string description)
-            : base(0, description)
-        {
+        private readonly string _description;
 
+        public SummaryAttribute(string description)
+        {
+            if (string.IsNullOrEmpty(description))
+                throw new ArgumentException("Description cannot be null or empty.", nameof(description));
+
+            _description = description;
         }
 
-        protected override string GetDisplayName(string description)
-            => description;
+        public override string DisplayName
+        {
+            get => _description;
+            set => throw new NotSupportedException("Overridden by constructor");
+        }
     }
 }

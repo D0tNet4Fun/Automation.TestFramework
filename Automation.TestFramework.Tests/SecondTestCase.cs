@@ -3,11 +3,11 @@
     [TestCase("TC0002")]
     public class SecondTestCase
     {
-        //[Summary("Login to web site")]
-        //public void LoginToWebsite()
-        //{
+        [Summary("Login to web site")]
+        public void LoginToWebsite()
+        {
 
-        //}
+        }
 
         [Precondition(1, "The web site must be deployed on the web server")]
         public void DeployWebSite()
