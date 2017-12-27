@@ -12,8 +12,8 @@ namespace Automation.TestFramework.Execution
     {
         private readonly object _testClassInstance;
 
-        public TestRunner(object testClassInstance, ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
-            : base(test, messageBus, testClass, new object[0], testMethod, new object[0], string.Empty, aggregator, cancellationTokenSource)
+        public TestRunner(object testClassInstance, ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+            : base(test, messageBus, testClass, new object[0], testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testClassInstance = testClassInstance;
         }

@@ -71,30 +71,36 @@ namespace Automation.TestFramework.Execution
             return runSummary;
         }
 
-        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod)
+        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
         {
             var method = (testMethod as IReflectionMethodInfo).MethodInfo;
-            return new TestRunner(_testClassInstance, test, MessageBus, TestClass, method, new ExceptionAggregator(Aggregator), CancellationTokenSource);
+            return new TestRunner(_testClassInstance, test, MessageBus, TestClass, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource);
         }
 
         private async Task<RunSummary> RunTestCaseComponents()
         {
             var runSummary = new RunSummary();
+            var skip = false;
+            const string skipReason = "An error occurred in a previous step.";
+
             foreach (var precondition in _testCaseDefinition.Preconditions)
             {
-                var runner = CreateTestRunner(precondition, precondition.MethodInfo);
+                var runner = CreateTestRunner(precondition, precondition.MethodInfo, skip ? skipReason : string.Empty);
                 runSummary.Aggregate(await runner.RunAsync());
+                skip = runSummary.Failed > 0;
             }
 
             foreach (var testStep in _testCaseDefinition.Steps)
             {
-                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo);
+                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
                 runSummary.Aggregate(await runner.RunAsync());
+                skip = runSummary.Failed > 0;
 
                 if (testStep.ExpectedResult != null)
                 {
-                    runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo);
+                    runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo, skip ? skipReason : string.Empty);
                     runSummary.Aggregate(await runner.RunAsync());
+                    skip = runSummary.Failed > 0;
                 }
             }
 
