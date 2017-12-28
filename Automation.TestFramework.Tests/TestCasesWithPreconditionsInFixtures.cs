@@ -56,4 +56,18 @@ namespace Automation.TestFramework.Tests
         {
         }
     }
+
+    [TestCase("with-fixture-3-no-constructor arguments")]
+    public class TestCaseWithFixture3 : IClassFixture<TestCaseFixture>
+    {
+        [Summary]
+        public void WithFixture3()
+        {
+        }
+
+        [Input(1)]
+        public void Input1()
+        {
+        }
+    }
 }

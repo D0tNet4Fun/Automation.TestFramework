@@ -10,16 +10,16 @@ namespace Automation.TestFramework.Entities
     {
         private readonly ITestCase _testCase;
         private readonly object _testClassInstance;
-        private readonly object[] _constructorArguments;
+        private readonly Dictionary<Type, object> _classFixtureMappings;
         private readonly ITestClass _testClass;
         private readonly List<ITest> _preconditions = new List<ITest>();
         private readonly List<TestStep> _testSteps = new List<TestStep>();
 
-        public TestCaseDefinition(ITestCase testCase, object testClassInstance, object[] constructorArguments)
+        public TestCaseDefinition(ITestCase testCase, object testClassInstance, Dictionary<Type, object> classFixtureMappings)
         {
             _testCase = testCase;
             _testClassInstance = testClassInstance;
-            _constructorArguments = constructorArguments;
+            _classFixtureMappings = classFixtureMappings;
             _testClass = testCase.TestMethod.TestClass;
         }
 
@@ -120,18 +120,19 @@ namespace Automation.TestFramework.Entities
             {
                 case DependencyType.Inheritance:
                     return _testClassInstance;
+
                 case DependencyType.Aggregation:
-                    var testClassInstance = _constructorArguments.FirstOrDefault(x => x.GetType() == dependencyClass.ToRuntimeType());
-                    // todo what if not found?
-                    return testClassInstance;
+                    var classFixtureType = dependencyClass.ToRuntimeType();
+                    _classFixtureMappings.TryGetValue(classFixtureType, out var testClassInstance);
+                    return testClassInstance; // will be null if not found
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dependencyType), dependencyType, null);
             }
         }
 
         private static IEnumerable<IMethodInfo> GetTestMethodsFromClass(ITypeInfo @class)
-            => @class.GetMethods(includePrivateMethods: true)
-                    .Where(m => m.GetCustomAttributes(typeof(TestCaseComponentAttribute)).Any());
+            => @class.GetMethods(includePrivateMethods: true).Where(m => m.GetCustomAttributes(typeof(TestCaseComponentAttribute)).Any());
 
         private ITest CreateTest(object testClassInstance, IMethodInfo testMethod, TestCaseComponentAttribute attribute)
         {
@@ -144,7 +145,7 @@ namespace Automation.TestFramework.Entities
             => test.DisplayName = $"[{index}/{count}] {test.DisplayName}";
 
         [DebuggerDisplay("Method {Method.Name} on {TestClassInstance.GetType().Name}")]
-        class TestMethod
+        private class TestMethod
         {
             public object TestClassInstance { get; set; }
             public IMethodInfo Method { get; set; }
