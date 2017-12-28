@@ -47,7 +47,7 @@ namespace Automation.TestFramework.Execution
             // discover the other tests
             Aggregator.Run(() =>
             {
-                _testCaseDefinition = new TestCaseDefinition(TestCase, _test.TestClassInstance);
+                _testCaseDefinition = new TestCaseDefinition(TestCase, _test.TestClassInstance, ConstructorArguments);
                 _testCaseDefinition.DiscoverTestCaseComponents();
             });
         }
