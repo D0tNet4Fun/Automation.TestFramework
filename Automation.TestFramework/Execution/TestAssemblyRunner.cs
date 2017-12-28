@@ -10,6 +10,8 @@ namespace Automation.TestFramework.Execution
 {
     internal class TestAssemblyRunner : XunitTestAssemblyRunner
     {
+        private Type _testNotificationType;
+
         public TestAssemblyRunner(ITestAssembly testAssembly, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
             : base(testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions)
         {
@@ -36,6 +38,8 @@ namespace Automation.TestFramework.Execution
                 foreach (var fixtureAttr in fixturesAttrs)
                     _assemblyFixtureMappings[fixtureAttr.FixtureType] = Activator.CreateInstance(fixtureAttr.FixtureType);
             });
+
+            Aggregator.Run(GetTestNotification);
         }
 
         protected override Task BeforeTestAssemblyFinishedAsync()
@@ -49,7 +53,17 @@ namespace Automation.TestFramework.Execution
 
         #endregion
 
+        private void GetTestNotification()
+        {
+            var testNotificationAttribute = ((IReflectionAssemblyInfo)TestAssembly.Assembly).Assembly
+                .GetCustomAttributes(typeof(TestNotificationAttribute), false)
+                .Cast<TestNotificationAttribute>()
+                .SingleOrDefault();
+
+            _testNotificationType = testNotificationAttribute?.Type;
+        }
+
         protected override Task<RunSummary> RunTestCollectionAsync(IMessageBus messageBus, ITestCollection testCollection, IEnumerable<IXunitTestCase> testCases, CancellationTokenSource cancellationTokenSource)
-            => new TestCollectionRunner(testCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator(Aggregator), cancellationTokenSource, _assemblyFixtureMappings).RunAsync();
+            => new TestCollectionRunner(testCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator(Aggregator), cancellationTokenSource, _assemblyFixtureMappings, _testNotificationType).RunAsync();
     }
 }
