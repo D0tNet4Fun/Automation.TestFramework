@@ -93,6 +93,13 @@ namespace Automation.TestFramework.Execution
             var skip = false;
             const string skipReason = "An error occurred in a previous step.";
 
+            foreach (var setup in _testCaseDefinition.Setups)
+            {
+                var runner = CreateTestRunner(setup, setup.MethodInfo, skip ? skipReason : string.Empty);
+                runSummary.Aggregate(await runner.RunAsync());
+                skip = runSummary.Failed > 0;
+            }
+
             foreach (var precondition in _testCaseDefinition.Preconditions)
             {
                 var runner = CreateTestRunner(precondition, precondition.MethodInfo, skip ? skipReason : string.Empty);
@@ -112,6 +119,12 @@ namespace Automation.TestFramework.Execution
                     runSummary.Aggregate(await runner.RunAsync());
                     skip = runSummary.Failed > 0;
                 }
+            }
+
+            foreach (var cleanup in _testCaseDefinition.Cleanups)
+            {
+                var runner = CreateTestRunner(cleanup, cleanup.MethodInfo);
+                runSummary.Aggregate(await runner.RunAsync());
             }
 
             return runSummary;
