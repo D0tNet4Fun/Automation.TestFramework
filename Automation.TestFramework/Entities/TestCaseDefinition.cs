@@ -89,9 +89,10 @@ namespace Automation.TestFramework.Entities
         {
             // if the class has dependencies then handle them first
             var dependencies = _testClass.Class.GetDependencies().ToList();
-            foreach (var testClassDependency in dependencies)
+            foreach (var testClassDependency in dependencies.Where(d => d.Type == DependencyType.Aggregation))
             {
-                var testClassInstance = GetTestClassInstance(testClassDependency.Class, testClassDependency.Type);
+                _classFixtureMappings.TryGetValue(testClassDependency.Class.ToRuntimeType(), 
+                     out var testClassInstance); // will be null if not found
                 var testMethods = GetTestMethodsFromClass(testClassDependency.Class);
                 foreach (var testMethod in testMethods)
                 {
@@ -103,7 +104,7 @@ namespace Automation.TestFramework.Entities
                 }
             }
 
-            // now handle the class
+            // now handle the class and its hierarchy
             foreach (var methodInfo in GetTestMethodsFromClass(_testClass.Class))
             {
                 yield return new TestMethod
@@ -111,23 +112,6 @@ namespace Automation.TestFramework.Entities
                     TestClassInstance = _testClassInstance,
                     Method = methodInfo
                 };
-            }
-        }
-
-        private object GetTestClassInstance(ITypeInfo dependencyClass, DependencyType dependencyType)
-        {
-            switch (dependencyType)
-            {
-                case DependencyType.Inheritance:
-                    return _testClassInstance;
-
-                case DependencyType.Aggregation:
-                    var classFixtureType = dependencyClass.ToRuntimeType();
-                    _classFixtureMappings.TryGetValue(classFixtureType, out var testClassInstance);
-                    return testClassInstance; // will be null if not found
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(dependencyType), dependencyType, null);
             }
         }
 
