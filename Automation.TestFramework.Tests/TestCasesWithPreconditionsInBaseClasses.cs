@@ -25,4 +25,23 @@ namespace Automation.TestFramework.Tests
         [Input(1)]
         public void Input1() => Assert.Equal(1, CallCount);
     }
+
+    [TestCase("with preconditions in base class chain")]
+    public class TestCaseWithPreconditionsInBaseClass2 : TestCaseBase2
+    {
+        [Summary("With preconditions in base class chain")]
+        public void Summary()
+        {
+
+        }
+
+        [Input(1)]
+        public void Input1() => Assert.Equal(2, CallCount);
+    }
+
+    public class TestCaseBase2 : TestCaseBase
+    {
+        [Precondition(2)]
+        public void Precondition2() => CallCount++;
+    }
 }
