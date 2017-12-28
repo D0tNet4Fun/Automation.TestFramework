@@ -85,7 +85,11 @@ namespace Automation.TestFramework.Entities
         }
 
         private ITest CreateTest(IMethodInfo testMethod, TestCaseComponentAttribute attribute)
-            => new Test(_testCase, testMethod, attribute.DisplayName); // assign the test to the test case
+        {
+            if (string.IsNullOrEmpty(attribute.Description))
+                attribute.Description = testMethod.GetDisplayNameFromName();
+            return new Test(_testCase, testMethod, attribute.DisplayName); // assign the test to the test case
+        }
 
         private void UpdateTestDisplayName(ITest test, int index, int count)
             => test.DisplayName = $"[{index}/{count}] {test.DisplayName}";

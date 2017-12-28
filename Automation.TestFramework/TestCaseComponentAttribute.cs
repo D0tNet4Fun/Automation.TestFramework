@@ -5,24 +5,25 @@ namespace Automation.TestFramework
     public abstract class TestCaseComponentAttribute : Attribute
     {
         public int Order { get; }
-        private readonly string _description;
 
-        protected TestCaseComponentAttribute(int order, string description)
+        protected TestCaseComponentAttribute(int order, string description = null)
         {
             if (order < 0)
                 throw new ArgumentOutOfRangeException(nameof(order), "Order must be positive");
 
-            if (string.IsNullOrEmpty(description))
-                throw new ArgumentException("Description cannot be null or empty.", nameof(description));
-
             Order = order;
-            _description = description;
+            Description = description;
         }
+
+        public string Description { get; internal set; }
 
         public string DisplayName
         {
-            get => GetDisplayName(_description);
-            set => throw new NotSupportedException("Use ctor to set description"); // todo
+            get
+            {
+                if (string.IsNullOrEmpty(Description)) throw new InvalidOperationException("Description is not set");
+                return GetDisplayName(Description);
+            }
         }
 
         protected abstract string GetDisplayName(string description);

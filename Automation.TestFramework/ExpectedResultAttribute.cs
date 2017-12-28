@@ -5,7 +5,7 @@
     /// </summary>
     public class ExpectedResultAttribute : TestCaseComponentAttribute
     {
-        public ExpectedResultAttribute(int order, string description)
+        public ExpectedResultAttribute(int order, string description = null)
             : base(order, description)
         {
 
