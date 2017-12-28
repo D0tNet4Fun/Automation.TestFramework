@@ -18,7 +18,7 @@ namespace Automation.TestFramework.Tests
         public void Test1()
         {
             // do something really bad to prove this test was not run
-            _testOutputHelper.WriteLine("Just about to Crash the test runner");
+            _testOutputHelper.WriteLine("Just about to crash the test runner");
             Process.GetCurrentProcess().Kill();
         }
     }
