@@ -11,8 +11,7 @@ namespace Automation.TestFramework.Execution
 {
     internal class TestCaseRunner : TestCaseRunner<IXunitTestCase>
     {
-        private object _testClassInstance;
-        private ITest _test; // the test bound to the test case
+        private Test _test; // the test bound to the test case
         private TestCaseDefinition _testCaseDefinition;
 
         public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
@@ -37,23 +36,26 @@ namespace Automation.TestFramework.Execution
             await base.AfterTestCaseStartingAsync();
 
             // create the test class instance
-            _test = new Test(TestCase, TestCase.Method, DisplayName);
+            _test = new Test(TestCase, null, TestCase.Method, DisplayName);
             var timer = new ExecutionTimer();
-            Aggregator.Run(() => _testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource));
+            Aggregator.Run(() =>
+            {
+                var testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
+                _test.TestClassInstance = testClassInstance;
+            });
 
             // discover the other tests
             Aggregator.Run(() =>
             {
-                _testCaseDefinition = new TestCaseDefinition(TestCase);
+                _testCaseDefinition = new TestCaseDefinition(TestCase, _test.TestClassInstance);
                 _testCaseDefinition.DiscoverTestCaseComponents();
             });
         }
 
         protected override Task BeforeTestCaseFinishedAsync()
         {
-            var test = new XunitTest(TestCase, DisplayName);
             var timer = new ExecutionTimer();
-            Aggregator.Run(() => test.DisposeTestClass(_testClassInstance, MessageBus, timer, CancellationTokenSource));
+            Aggregator.Run(() => _test.DisposeTestClass(_test.TestClassInstance, MessageBus, timer, CancellationTokenSource));
 
             return base.BeforeTestCaseFinishedAsync();
         }
@@ -79,7 +81,7 @@ namespace Automation.TestFramework.Execution
         private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null, Exception exception = null)
         {
             var method = (testMethod as IReflectionMethodInfo).MethodInfo;
-            return new TestRunner(_testClassInstance, test, MessageBus, TestClass, method, skipReason, exception, new ExceptionAggregator(Aggregator), CancellationTokenSource);
+            return new TestRunner(test, MessageBus, TestClass, method, skipReason, exception, new ExceptionAggregator(Aggregator), CancellationTokenSource);
         }
 
         private async Task<RunSummary> RunTestCaseComponents()

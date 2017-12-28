@@ -7,13 +7,15 @@ namespace Automation.TestFramework.Entities
     internal class TestCaseDefinition
     {
         private readonly ITestCase _testCase;
+        private readonly object _testClassInstance;
         private readonly ITestClass _testClass;
         private readonly List<ITest> _preconditions = new List<ITest>();
         private readonly List<TestStep> _testSteps = new List<TestStep>();
 
-        public TestCaseDefinition(ITestCase testCase)
+        public TestCaseDefinition(ITestCase testCase, object testClassInstance)
         {
             _testCase = testCase;
+            _testClassInstance = testClassInstance;
             _testClass = testCase.TestMethod.TestClass;
         }
 
@@ -46,7 +48,7 @@ namespace Automation.TestFramework.Entities
             {
                 var attribute = pair.attribute;
                 var index = pair.attribute.Order - 1;
-                var test = CreateTest(pair.testMethod, attribute);
+                var test = CreateTest(_testClassInstance, pair.testMethod, attribute);
 
                 if (attribute is PreconditionAttribute)
                 {
@@ -84,11 +86,11 @@ namespace Automation.TestFramework.Entities
             return _testClass.Class.GetMethods(includePrivateMethods: true);
         }
 
-        private ITest CreateTest(IMethodInfo testMethod, TestCaseComponentAttribute attribute)
+        private ITest CreateTest(object testClassInstance, IMethodInfo testMethod, TestCaseComponentAttribute attribute)
         {
             if (string.IsNullOrEmpty(attribute.Description))
                 attribute.Description = testMethod.GetDisplayNameFromName();
-            return new Test(_testCase, testMethod, attribute.DisplayName); // assign the test to the test case
+            return new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
         }
 
         private void UpdateTestDisplayName(ITest test, int index, int count)
