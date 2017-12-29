@@ -4,6 +4,7 @@
     <id>Automation.TestFramework</id>
     <version>1.0.0-beta</version>
     <title>Automation.TestFramework</title>
+    <owners>DotNet4Fun</owners>
     <authors>DotNet4Fun</authors>
     <copyright>Copyright (C) 2018 DotNet4Fun</copyright>
     <summary>Xunit-based test framework for automating test cases.</summary>
