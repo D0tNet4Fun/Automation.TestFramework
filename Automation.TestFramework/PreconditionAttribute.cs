@@ -5,7 +5,7 @@
     /// </summary>
     public class PreconditionAttribute : TestCaseComponentAttribute
     {
-        public PreconditionAttribute(int order, string description = null)
+        public PreconditionAttribute(int order = 1, string description = null)
             : base(order, description)
         {
 

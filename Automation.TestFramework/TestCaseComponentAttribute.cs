@@ -6,7 +6,7 @@ namespace Automation.TestFramework
     {
         public int Order { get; }
 
-        protected TestCaseComponentAttribute(int order, string description = null)
+        protected TestCaseComponentAttribute(int order = 1, string description = null)
         {
             if (order < 0)
                 throw new ArgumentOutOfRangeException(nameof(order), "Order must be positive");
