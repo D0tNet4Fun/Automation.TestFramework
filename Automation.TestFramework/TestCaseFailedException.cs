@@ -13,6 +13,12 @@ namespace Automation.TestFramework
         {
         }
 
+        public TestCaseFailedException(AggregateException aggregateException)
+            : base(aggregateException.Flatten().GetMessage(Environment.NewLine))
+        {
+
+        }
+
         public override string StackTrace => string.Empty;
     }
 }

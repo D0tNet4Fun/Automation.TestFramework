@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Automation.TestFramework.Entities;
 using Humanizer;
@@ -35,5 +36,8 @@ namespace Automation.TestFramework
                 yield return new TestClassDependency { Type = DependencyType.Aggregation, Class = classFixture };
             }
         }
+
+        public static string GetMessage(this AggregateException aggregateException, string separator)
+            => separator + string.Join(separator, aggregateException.InnerExceptions.Select(e => e.Message));
     }
 }
