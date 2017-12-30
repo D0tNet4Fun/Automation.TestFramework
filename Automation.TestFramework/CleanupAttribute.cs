@@ -5,12 +5,12 @@
     /// </summary>
     public class CleanupAttribute : TestCaseComponentAttribute
     {
-        public CleanupAttribute(int order, string description = null)
+        public CleanupAttribute(int order = 1, string description = null)
             : base(order, description)
         {
         }
 
         protected override string GetDisplayName(string description)
-            => $"[Cleanup] {Order} {description}";
+            => $"[Cleanup] {Order}. {description}";
     }
 }

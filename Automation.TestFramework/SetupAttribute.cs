@@ -5,12 +5,12 @@
     /// </summary>
     public class SetupAttribute : TestCaseComponentAttribute
     {
-        public SetupAttribute(int order, string description = null)
+        public SetupAttribute(int order = 1, string description = null)
             : base(order, description)
         {
         }
 
         protected override string GetDisplayName(string description)
-            => $"[Setup] {Order} {description}";
+            => $"[Setup] {Order}. {description}";
     }
 }
