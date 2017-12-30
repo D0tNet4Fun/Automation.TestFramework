@@ -2,11 +2,11 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Automation.TestFramework.Execution;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-using Automation.TestFramework.Execution;
 
-namespace Automation.TestFramework
+namespace Automation.TestFramework.Entities
 {
     internal class TestCase : XunitTestCase
     {

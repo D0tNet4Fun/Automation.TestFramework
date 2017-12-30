@@ -1,26 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Automation.TestFramework.Discovery;
+using Automation.TestFramework.Entities;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Execution
 {
     internal class TestCaseRunner : TestCaseRunner<IXunitTestCase>
     {
         private object _testClassInstance;
-        private readonly List<TestRunner> _testRunners;
         private ITest _test; // the test bound to the test case
+        private TestCaseDefinition _testCaseDefinition;
 
         public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
             : base(testCase, messageBus, aggregator, cancellationTokenSource)
         {
             DisplayName = displayName;
-            _testRunners = new List<TestRunner>();
             SkipReason = skipReason;
             ConstructorArguments = constructorArguments;
             TestClass = TestCase.TestMethod.TestClass.Class.ToRuntimeType();
@@ -46,8 +44,8 @@ namespace Automation.TestFramework.Execution
             // discover the other tests
             Aggregator.Run(() =>
             {
-                var testDiscoverer = new TestDiscoverer(TestCase);
-                _testRunners.AddRange(testDiscoverer.DiscoverTests().Select(test => CreateTestRunner(test, test.MethodInfo)));
+                _testCaseDefinition = new TestCaseDefinition(TestCase);
+                _testCaseDefinition.DiscoverTestCaseComponents();
             });
         }
 
@@ -64,11 +62,9 @@ namespace Automation.TestFramework.Execution
         {
             var runSummary = new RunSummary();
 
-            foreach (var testRunner in _testRunners)
-            {
-                runSummary.Aggregate(await testRunner.RunAsync());
-            }
+            runSummary.Aggregate(await RunTestCaseComponents());
 
+            // run the summary last
             var runner = CreateTestRunner(_test, TestCase.Method);
             runSummary.Aggregate(await runner.RunAsync());
 
@@ -79,6 +75,30 @@ namespace Automation.TestFramework.Execution
         {
             var method = (testMethod as IReflectionMethodInfo).MethodInfo;
             return new TestRunner(_testClassInstance, test, MessageBus, TestClass, method, new ExceptionAggregator(Aggregator), CancellationTokenSource);
+        }
+
+        private async Task<RunSummary> RunTestCaseComponents()
+        {
+            var runSummary = new RunSummary();
+            foreach (var precondition in _testCaseDefinition.Preconditions)
+            {
+                var runner = CreateTestRunner(precondition, precondition.MethodInfo);
+                runSummary.Aggregate(await runner.RunAsync());
+            }
+
+            foreach (var testStep in _testCaseDefinition.Steps)
+            {
+                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo);
+                runSummary.Aggregate(await runner.RunAsync());
+
+                if (testStep.ExpectedResult != null)
+                {
+                    runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo);
+                    runSummary.Aggregate(await runner.RunAsync());
+                }
+            }
+
+            return runSummary;
         }
     }
 }

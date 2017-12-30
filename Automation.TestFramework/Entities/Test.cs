@@ -1,6 +1,6 @@
 ﻿using Xunit.Abstractions;
 
-namespace Automation.TestFramework
+namespace Automation.TestFramework.Entities
 {
     internal interface ITest : Xunit.Abstractions.ITest
     {
