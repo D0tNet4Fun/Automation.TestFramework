@@ -12,6 +12,6 @@
         }
 
         protected override string GetDisplayName(string description)
-            => $"{Order}. [Expected result] {description}";
+            => $"[Expected result] {Order}. {description}";
     }
 }
