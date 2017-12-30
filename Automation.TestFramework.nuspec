@@ -11,7 +11,7 @@
     <description>Xunit-based test framework for automating test cases. Supports .NET Core 2.x.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</projectUrl>
-    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <licenseUrl>https://raw.githubusercontent.com/D0tNet4Fun/Automation.TestFramework/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>xunit automation</tags>
     <dependencies>
