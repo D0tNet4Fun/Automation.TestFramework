@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,8 +15,10 @@ namespace Automation.TestFramework.Entities
         private readonly ITestClass _testClass;
         private readonly List<ITest> _setups = new List<ITest>();
         private readonly List<ITest> _preconditions = new List<ITest>();
-        private readonly List<TestStep> _testSteps = new List<TestStep>();
+        private readonly List<ITest> _inputs = new List<ITest>();
+        private readonly List<ITest> _expectedResults = new List<ITest>();
         private readonly List<ITest> _cleanups = new List<ITest>();
+        private readonly Dictionary<IMethodInfo, IMethodInfo> _duplicates = new Dictionary<IMethodInfo, IMethodInfo>();
 
         public TestCaseDefinition(ITestCase testCase, object testClassInstance, Dictionary<Type, object> classFixtureMappings)
         {
@@ -29,7 +32,12 @@ namespace Automation.TestFramework.Entities
 
         public IList<ITest> Preconditions => _preconditions;
 
-        public IList<TestStep> Steps => _testSteps;
+        public IList<TestStep> Steps
+            => Enumerable.Range(0, _inputs.Count).Select(i => new TestStep
+            {
+                Input = _inputs[i],
+                ExpectedResult = _expectedResults[i] // can be null
+            }).ToList();
 
         public IList<ITest> Cleanups => _cleanups;
 
@@ -49,13 +57,14 @@ namespace Automation.TestFramework.Entities
 
             // initialize the lists
             var count = testCaseComponents.Count(x => x.attribute is SetupAttribute);
-            _setups.AddRange(Enumerable.Range(0, count).Select(_ => (ITest)null));
+            InitializeList(_setups, count);
             count = testCaseComponents.Count(x => x.attribute is PreconditionAttribute);
-            _preconditions.AddRange(Enumerable.Range(0, count).Select(_ => (ITest)null));
+            InitializeList(_preconditions, count);
             count = testCaseComponents.Count(x => x.attribute is InputAttribute);
-            _testSteps.AddRange(Enumerable.Range(0, count).Select(_ => new TestStep()));
+            InitializeList(_inputs, count);
+            InitializeList(_expectedResults, count); // same count as input, as there may be inputs without expected results but not the other way around
             count = testCaseComponents.Count(x => x.attribute is CleanupAttribute);
-            _cleanups.AddRange(Enumerable.Range(0, count).Select(_ => (ITest)null));
+            InitializeList(_cleanups, count);
 
             // distribute the test case components into the lists
             foreach (var pair in testCaseComponents)
@@ -64,48 +73,62 @@ namespace Automation.TestFramework.Entities
                 var index = pair.attribute.Order - 1;
                 var test = CreateTest(pair.testMethod.TestClassInstance, pair.testMethod.Method, attribute);
 
-                if (attribute is SetupAttribute)
-                {
-                    _setups[index] = test;
-                }
-                if (attribute is PreconditionAttribute)
-                {
-                    _preconditions[index] = test;
-                }
-                else if (attribute is InputAttribute)
-                {
-                    _testSteps[index].Input = test;
-                }
-                else if (attribute is ExpectedResultAttribute)
-                {
-                    _testSteps[index].ExpectedResult = test;
-                }
-                else if (attribute is CleanupAttribute)
-                {
-                    _cleanups[index] = test;
-                }
+                if (attribute is SetupAttribute) TryUpdateList(_setups, index, test);
+                else if (attribute is PreconditionAttribute) TryUpdateList(_preconditions, index, test);
+                else if (attribute is InputAttribute) TryUpdateList(_inputs, index, test);
+                else if (attribute is ExpectedResultAttribute) TryUpdateList(_expectedResults, index, test);
+                else if (attribute is CleanupAttribute) TryUpdateList(_cleanups, index, test);
             }
 
-            // update the display names of the tests
+            CheckForDuplicates(); // this can throw
+
+            UpdateDisplayNames(testCaseComponents.Count);
+        }
+
+        private void TryUpdateList(IList<ITest> list, int index, ITest test)
+        {
+            // if the list contains a test at index, then the input test is considered a duplicate of that one and it will not be inserted in the list
+            var existingTest = list[index];
+            if (existingTest != null)
+                _duplicates.Add(test.MethodInfo, existingTest.MethodInfo);
+            else
+                list[index] = test;
+        }
+
+        private void CheckForDuplicates()
+        {
+            if (_duplicates.Count > 0)
+            {
+                var errorMessages = _duplicates.Select(dup =>
+                    $"Method {dup.Key.Name} in class {dup.Key.ToRuntimeMethod().DeclaringType.Name} " +
+                    "is not allowed to have the same order as " +
+                    $"method {dup.Value.Name} in class {dup.Value.ToRuntimeMethod().DeclaringType.Name}.")
+                    .ToList();
+                errorMessages.Insert(0, "Invalid test case definition:");
+                throw new TestCaseFailedException(string.Join(Environment.NewLine, errorMessages));
+            }
+        }
+
+        private void UpdateDisplayNames(int testCount)
+        {
             var testIndex = 0;
-            var testCount = testCaseComponents.Count;
-            foreach (var setup in _setups)
+            foreach (var setup in Setups)
             {
                 UpdateTestDisplayName(setup, ++testIndex, testCount);
             }
-            foreach (var precondition in _preconditions)
+            foreach (var precondition in Preconditions)
             {
                 UpdateTestDisplayName(precondition, ++testIndex, testCount);
             }
-            foreach (var testStep in _testSteps)
+            foreach (var step in Steps)
             {
-                UpdateTestDisplayName(testStep.Input, ++testIndex, testCount);
-                if (testStep.ExpectedResult != null)
+                UpdateTestDisplayName(step.Input, ++testIndex, testCount);
+                if (step.ExpectedResult != null)
                 {
-                    UpdateTestDisplayName(testStep.ExpectedResult, ++testIndex, testCount);
+                    UpdateTestDisplayName(step.ExpectedResult, ++testIndex, testCount);
                 }
             }
-            foreach (var cleanup in _cleanups)
+            foreach (var cleanup in Cleanups)
             {
                 UpdateTestDisplayName(cleanup, ++testIndex, testCount);
             }
@@ -140,6 +163,9 @@ namespace Automation.TestFramework.Entities
                 };
             }
         }
+
+        private static void InitializeList<T>(List<T> list, int count)
+            => list.AddRange(Enumerable.Range(0, count).Select(_ => default(T)));
 
         private static IEnumerable<IMethodInfo> GetTestMethodsFromClass(ITypeInfo @class)
             => @class.GetMethods(includePrivateMethods: true).Where(m => m.GetCustomAttributes(typeof(TestCaseComponentAttribute)).Any());

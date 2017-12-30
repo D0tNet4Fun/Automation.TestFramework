@@ -16,6 +16,7 @@ namespace Automation.TestFramework.Execution
         private readonly Type _testNotificationType;
         private Test _test; // the test bound to the test case
         private TestCaseDefinition _testCaseDefinition;
+        private Exception _testCaseDiscoveryException;
 
         public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Dictionary<Type, object> classFixtureMappings, Type testNotificationType)
             : base(testCase, messageBus, aggregator, cancellationTokenSource)
@@ -40,21 +41,22 @@ namespace Automation.TestFramework.Execution
         {
             await base.AfterTestCaseStartingAsync();
 
-            // create the test class instance
-            _test = new Test(TestCase, null, TestCase.Method, DisplayName);
-            var timer = new ExecutionTimer();
-            Aggregator.Run(() =>
+            try
             {
+                // create the test class instance
+                _test = new Test(TestCase, null, TestCase.Method, DisplayName);
+                var timer = new ExecutionTimer();
                 var testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
                 _test.TestClassInstance = testClassInstance;
-            });
 
-            // discover the other tests
-            Aggregator.Run(() =>
-            {
+                // discover the other tests
                 _testCaseDefinition = new TestCaseDefinition(TestCase, _test.TestClassInstance, _classFixtureMappings);
                 _testCaseDefinition.DiscoverTestCaseComponents();
-            });
+            }
+            catch (Exception ex)
+            {
+                _testCaseDiscoveryException = ex;
+            }
         }
 
         protected override Task BeforeTestCaseFinishedAsync()
@@ -67,33 +69,23 @@ namespace Automation.TestFramework.Execution
 
         protected override async Task<RunSummary> RunTestAsync()
         {
+            // if there was an exception during test discovery then handle it here instead of anything else
+            if (_testCaseDiscoveryException != null)
+                return FailBecauseOfException(_testCaseDiscoveryException);
+
             var runSummary = new RunSummary();
-
+            // run the test case components first
             runSummary.Aggregate(await RunTestCaseComponents());
-
-            // run the summary last
-            Exception exception = null;
-            if (runSummary.Failed > 0)
-            {
-                exception = new TestCaseFailedException("The test case steps were not completed successfully.");
-            }
-            var runner = CreateTestRunner(_test, TestCase.Method, exception: exception);
-            runSummary.Aggregate(await runner.RunAsync());
-
+            // run the Summary last
+            runSummary.Aggregate(await RunTestCaseSummary(runSummary.Failed > 0));
             return runSummary;
-        }
-
-        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null, Exception exception = null)
-        {
-            var method = (testMethod as IReflectionMethodInfo).MethodInfo;
-            return new TestRunner(test, MessageBus, TestClass, method, skipReason, exception, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
         }
 
         private async Task<RunSummary> RunTestCaseComponents()
         {
             var runSummary = new RunSummary();
             var skip = false;
-            const string skipReason = "An error occurred in a previous step.";
+            const string skipReason = "An error occurred in a previous step."; // we'll show this when skip becomes true
 
             foreach (var setup in _testCaseDefinition.Setups)
             {
@@ -130,6 +122,35 @@ namespace Automation.TestFramework.Execution
             }
 
             return runSummary;
+        }
+
+        private async Task<RunSummary> RunTestCaseSummary(bool hasErrors)
+        {
+            if (hasErrors)
+                return FailBecauseOfException(new TestCaseFailedException("The test case steps were not completed successfully."));
+
+            var runner = CreateTestRunner(_test, TestCase.Method);
+            return await runner.RunAsync();
+        }
+
+        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        {
+            var method = testMethod.ToRuntimeMethod();
+            return new TestRunner(test, MessageBus, TestClass, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
+        }
+
+        private RunSummary FailBecauseOfException(Exception exception)
+        {
+            var test = new XunitTest(TestCase, DisplayName);
+
+            if (!MessageBus.QueueMessage(new TestStarting(test)))
+                CancellationTokenSource.Cancel();
+            else if (!MessageBus.QueueMessage(new TestFailed(test, 0, null, exception)))
+                CancellationTokenSource.Cancel();
+            if (!MessageBus.QueueMessage(new TestFinished(test, 0, null)))
+                CancellationTokenSource.Cancel();
+
+            return new RunSummary { Total = 1, Failed = 1 };
         }
     }
 }
