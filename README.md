@@ -26,8 +26,8 @@ public class TestCase1
 {
 	// define test data
 	private const string WebSiteUrl = "http://my.site.com";
-	private const string UserName = "Username";
-	private const string Password = "Password";
+	private const string UserName = "user";
+	private const string Password = "password";
 
 	[Summary("Login to web site")]
 	public void LoginToWebSite() { } // leave this empty
@@ -60,6 +60,17 @@ When the Summary method is executed, all the other test methods are discovered a
 
 This way, the test report matches the test case definition as closely as possible.
 
+## How to use in VS 2017
+Create a new Xunit test project for .NET Core and then add a reference to Automation.TestFramework. The package is also available on NuGet.org.
+
+Add the following code:
+```C#
+[assembly: TestFramework("Automation.TestFramework.Framework", "Automation.TestFramework")]
+```
+
+**Note**: make sure the project dependencies include the ones mentioned on http://xunit.github.io/docs/getting-started-dotnet-core.html#run-tests-visualstudio.
+
+
 ## Supported frameworks
 The test framework supports .NET Core 2.0.
 
@@ -71,31 +82,33 @@ There is a _known issue_ with the Resharper test runner: the tests do not show u
 ## Test case attributes
 The test framework uses attributes to identify test cases and their components:
 
-*TestCase*
+**TestCase**
 
 Identifies a test class as a test case. The classes not marked as such are ignored by the test runner.
 
-*Summary*
+**Summary**
 
 Used as the 'entry point' of the test case, that can be discovered by the test runner. Each test case class must have exactly one test method marked as Summary.
 
-*Precondition*
+**Precondition**
 
 Identifies a precondition of the test case. There can be more than one.
 
-*Input*
+**Input**
 
 Identifies the input of a test case step. There can be more than one.
 
-*ExpectedResult*
+**ExpectedResult**
 
 Identifies the expected result of a test case step. Each expected result is linked to an input, but an input does not have to have an expected result.
 
 ### Setup and Cleanup
-*Setup*
+**Setup**
+
 Used to identify methods that run before all of the other methods of the test case. There can be more than one.
 
-*Cleanup*
+**Cleanup**
+
 Used to identify methods that run after all of the other methods of the test case have run, regardless of their outcome.
 
 These two are optional, as this behavior is already implemented in Xunit using class constructor and Dispose. These should be used only if we need the test methods to show in the test report. 
