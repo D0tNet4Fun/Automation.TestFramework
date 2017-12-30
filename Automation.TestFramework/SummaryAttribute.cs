@@ -12,11 +12,8 @@ namespace Automation.TestFramework
     {
         private readonly string _description;
 
-        public SummaryAttribute(string description)
+        public SummaryAttribute(string description = null)
         {
-            if (string.IsNullOrEmpty(description))
-                throw new ArgumentException("Description cannot be null or empty.", nameof(description));
-
             _description = description;
         }
 

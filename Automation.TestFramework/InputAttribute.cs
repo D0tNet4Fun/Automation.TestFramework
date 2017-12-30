@@ -5,7 +5,7 @@
     /// </summary>
     public class InputAttribute : TestCaseComponentAttribute
     {
-        public InputAttribute(int order, string description)
+        public InputAttribute(int order, string description = null)
             : base(order, description)
         {
 

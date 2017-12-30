@@ -21,6 +21,13 @@ namespace Automation.TestFramework.Entities
         {
         }
 
+        protected override string GetDisplayName(IAttributeInfo factAttribute, string displayName)
+        {
+            if (string.Equals(displayName, BaseDisplayName, StringComparison.InvariantCultureIgnoreCase))
+                return TestMethod.Method.GetDisplayNameFromName();
+            return base.GetDisplayName(factAttribute, displayName);
+        }
+
         public override Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
             => new TestCaseRunner(this, DisplayName, SkipReason, constructorArguments, messageBus, aggregator, cancellationTokenSource).RunAsync();
     }
