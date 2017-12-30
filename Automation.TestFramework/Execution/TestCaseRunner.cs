@@ -13,16 +13,18 @@ namespace Automation.TestFramework.Execution
     internal class TestCaseRunner : TestCaseRunner<IXunitTestCase>
     {
         private readonly Dictionary<Type, object> _classFixtureMappings;
+        private readonly Type _testNotificationType;
         private Test _test; // the test bound to the test case
         private TestCaseDefinition _testCaseDefinition;
 
-        public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Dictionary<Type, object> classFixtureMappings)
+        public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Dictionary<Type, object> classFixtureMappings, Type testNotificationType)
             : base(testCase, messageBus, aggregator, cancellationTokenSource)
         {
             DisplayName = displayName;
             SkipReason = skipReason;
             ConstructorArguments = constructorArguments;
             _classFixtureMappings = classFixtureMappings;
+            _testNotificationType = testNotificationType;
             TestClass = TestCase.TestMethod.TestClass.Class.ToRuntimeType();
             TestMethod = TestCase.Method.ToRuntimeMethod();
         }
@@ -84,7 +86,7 @@ namespace Automation.TestFramework.Execution
         private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null, Exception exception = null)
         {
             var method = (testMethod as IReflectionMethodInfo).MethodInfo;
-            return new TestRunner(test, MessageBus, TestClass, method, skipReason, exception, new ExceptionAggregator(Aggregator), CancellationTokenSource);
+            return new TestRunner(test, MessageBus, TestClass, method, skipReason, exception, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
         }
 
         private async Task<RunSummary> RunTestCaseComponents()

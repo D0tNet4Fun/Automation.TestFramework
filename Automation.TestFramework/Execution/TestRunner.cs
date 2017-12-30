@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +12,13 @@ namespace Automation.TestFramework.Execution
     internal class TestRunner : TestRunner<ITestCase>
     {
         private readonly Exception _error;
+        private readonly Type _testNotificationType;
 
-        public TestRunner(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, string skipReason, Exception error, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+        public TestRunner(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, string skipReason, Exception error, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
             : base(test, messageBus, testClass, new object[0], testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _error = error;
+            _testNotificationType = testNotificationType;
         }
 
         public new ITest Test => (ITest)base.Test;
@@ -55,7 +58,7 @@ namespace Automation.TestFramework.Execution
                 aggregator.Run(() => throw _error);
                 return Task.FromResult<decimal>(0);
             }
-            return new TestInvoker(Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource).RunAsync();
+            return new TestInvoker(Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource, _testNotificationType).RunAsync();
         }
     }
 }
