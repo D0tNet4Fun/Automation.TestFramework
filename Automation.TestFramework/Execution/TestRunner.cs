@@ -11,11 +11,13 @@ namespace Automation.TestFramework.Execution
     internal class TestRunner : TestRunner<ITestCase>
     {
         private readonly object _testClassInstance;
+        private readonly Exception _error;
 
-        public TestRunner(object testClassInstance, ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
-            : base(test, messageBus, testClass, new object[0], testMethod, new object[0], string.Empty, aggregator, cancellationTokenSource)
+        public TestRunner(object testClassInstance, ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, string skipReason, Exception error, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+            : base(test, messageBus, testClass, new object[0], testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testClassInstance = testClassInstance;
+            _error = error;
         }
 
         protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
@@ -47,6 +49,13 @@ namespace Automation.TestFramework.Execution
         }
 
         private Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
-            => new TestInvoker(_testClassInstance, Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource).RunAsync();
+        {
+            if (_error != null)
+            {
+                aggregator.Run(() => throw _error);
+                return Task.FromResult<decimal>(0);
+            }
+            return new TestInvoker(_testClassInstance, Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource).RunAsync();
+        }
     }
 }
