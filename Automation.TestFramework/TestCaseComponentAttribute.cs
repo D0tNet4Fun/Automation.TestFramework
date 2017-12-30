@@ -1,9 +1,8 @@
 ﻿using System;
-using Xunit;
 
 namespace Automation.TestFramework
 {
-    public abstract class TestCaseComponentAttribute : FactAttribute
+    public abstract class TestCaseComponentAttribute : Attribute
     {
         public int Order { get; }
         private readonly string _description;
@@ -20,7 +19,7 @@ namespace Automation.TestFramework
             _description = description;
         }
 
-        public override string DisplayName
+        public string DisplayName
         {
             get => GetDisplayName(_description);
             set => throw new NotSupportedException("Use ctor to set description"); // todo
