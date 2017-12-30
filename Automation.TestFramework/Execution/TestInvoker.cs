@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Execution
 {
@@ -10,10 +11,10 @@ namespace Automation.TestFramework.Execution
     {
         private readonly object _testClassInstance;
 
-        public TestInvoker(object testClassInstance, Xunit.Abstractions.ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+        public TestInvoker(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
             : base(test, messageBus, testClass, new object[0], testMethod, new object[0], aggregator, cancellationTokenSource)
         {
-            _testClassInstance = testClassInstance;
+            _testClassInstance = test.TestClassInstance;
         }
 
         protected override object CreateTestClass()

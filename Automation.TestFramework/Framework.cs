@@ -1,4 +1,6 @@
-﻿using Automation.TestFramework.Discovery;
+﻿using System.Reflection;
+using Automation.TestFramework.Discovery;
+using Automation.TestFramework.Execution;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -13,5 +15,8 @@ namespace Automation.TestFramework
 
         protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
             => new FrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink);
+
+        protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
+            => new FrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
     }
 }

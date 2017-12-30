@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace Automation.TestFramework.Entities
 {
     internal class TestCase : XunitTestCase
     {
+        private Dictionary<Type, object> _classFixtureMappings;
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes", error: true)]
         public TestCase()
@@ -29,6 +32,11 @@ namespace Automation.TestFramework.Entities
         }
 
         public override Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
-            => new TestCaseRunner(this, DisplayName, SkipReason, constructorArguments, messageBus, aggregator, cancellationTokenSource).RunAsync();
+            => new TestCaseRunner(this, DisplayName, SkipReason, constructorArguments, messageBus, aggregator, cancellationTokenSource, _classFixtureMappings).RunAsync();
+
+        internal void SetClassFixtureMappings(Dictionary<Type, object> classFixtureMappings)
+        {
+            _classFixtureMappings = classFixtureMappings;
+        }
     }
 }

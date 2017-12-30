@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Xunit.Abstractions;
 
@@ -7,13 +9,17 @@ namespace Automation.TestFramework.Entities
     internal class TestCaseDefinition
     {
         private readonly ITestCase _testCase;
+        private readonly object _testClassInstance;
+        private readonly Dictionary<Type, object> _classFixtureMappings;
         private readonly ITestClass _testClass;
         private readonly List<ITest> _preconditions = new List<ITest>();
         private readonly List<TestStep> _testSteps = new List<TestStep>();
 
-        public TestCaseDefinition(ITestCase testCase)
+        public TestCaseDefinition(ITestCase testCase, object testClassInstance, Dictionary<Type, object> classFixtureMappings)
         {
             _testCase = testCase;
+            _testClassInstance = testClassInstance;
+            _classFixtureMappings = classFixtureMappings;
             _testClass = testCase.TestMethod.TestClass;
         }
 
@@ -28,7 +34,7 @@ namespace Automation.TestFramework.Entities
             // get the test methods which are test case components, and their attribute
             var testCaseComponents =
                 (from testMethod in testMethods
-                 let attributeInfo = testMethod.GetCustomAttributes(typeof(TestCaseComponentAttribute)).SingleOrDefault()
+                 let attributeInfo = testMethod.Method.GetCustomAttributes(typeof(TestCaseComponentAttribute)).SingleOrDefault()
                  where attributeInfo != null
                  let attribute = (TestCaseComponentAttribute)(attributeInfo as IReflectionAttributeInfo)?.Attribute
                  where attribute != null
@@ -46,7 +52,7 @@ namespace Automation.TestFramework.Entities
             {
                 var attribute = pair.attribute;
                 var index = pair.attribute.Order - 1;
-                var test = CreateTest(pair.testMethod, attribute);
+                var test = CreateTest(pair.testMethod.TestClassInstance, pair.testMethod.Method, attribute);
 
                 if (attribute is PreconditionAttribute)
                 {
@@ -79,19 +85,54 @@ namespace Automation.TestFramework.Entities
             }
         }
 
-        private IEnumerable<IMethodInfo> GetTestMethods()
+        private IEnumerable<TestMethod> GetTestMethods()
         {
-            return _testClass.Class.GetMethods(includePrivateMethods: true);
+            // if the class has dependencies then handle them first
+            var dependencies = _testClass.Class.GetDependencies().ToList();
+            foreach (var testClassDependency in dependencies.Where(d => d.Type == DependencyType.Aggregation))
+            {
+                _classFixtureMappings.TryGetValue(testClassDependency.Class.ToRuntimeType(), 
+                     out var testClassInstance); // will be null if not found
+                var testMethods = GetTestMethodsFromClass(testClassDependency.Class);
+                foreach (var testMethod in testMethods)
+                {
+                    yield return new TestMethod
+                    {
+                        TestClassInstance = testClassInstance,
+                        Method = testMethod
+                    };
+                }
+            }
+
+            // now handle the class and its hierarchy
+            foreach (var methodInfo in GetTestMethodsFromClass(_testClass.Class))
+            {
+                yield return new TestMethod
+                {
+                    TestClassInstance = _testClassInstance,
+                    Method = methodInfo
+                };
+            }
         }
 
-        private ITest CreateTest(IMethodInfo testMethod, TestCaseComponentAttribute attribute)
+        private static IEnumerable<IMethodInfo> GetTestMethodsFromClass(ITypeInfo @class)
+            => @class.GetMethods(includePrivateMethods: true).Where(m => m.GetCustomAttributes(typeof(TestCaseComponentAttribute)).Any());
+
+        private ITest CreateTest(object testClassInstance, IMethodInfo testMethod, TestCaseComponentAttribute attribute)
         {
             if (string.IsNullOrEmpty(attribute.Description))
                 attribute.Description = testMethod.GetDisplayNameFromName();
-            return new Test(_testCase, testMethod, attribute.DisplayName); // assign the test to the test case
+            return new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
         }
 
-        private void UpdateTestDisplayName(ITest test, int index, int count)
+        private static void UpdateTestDisplayName(ITest test, int index, int count)
             => test.DisplayName = $"[{index}/{count}] {test.DisplayName}";
+
+        [DebuggerDisplay("Method {Method.Name} on {TestClassInstance.GetType().Name}")]
+        private class TestMethod
+        {
+            public object TestClassInstance { get; set; }
+            public IMethodInfo Method { get; set; }
+        }
     }
 }
