@@ -1,5 +1,5 @@
 # Automation.TestFramework
-This is a test framework designed for automated tests based on test cases. 
+This is a test framework based on [xUnit.net](http://xunit.github.io). The framework is designed for automated tests that are written based on test cases. 
 
 The framework allows the user to define a test case to a test class. The test case preconditions and steps can be mapped as methods. The framework ensures they are executed in the correct order.
 
@@ -51,7 +51,7 @@ public class TestCase1
 	private void VerifyUserIsLoggedIn() {...}
 }
 ```
-Note: this changes a fundamental concept of Xunit, where a test method is viewed as a test case and the test class is viewed as a collection of related test cases. For us, the test case is the test class.
+Note: this changes a fundamental concept of xUnit, where a test method is viewed as a test case and the test class is viewed as a collection of related test cases. For us, the test case is the test class.
 
 ### Running the test case
 When the test runner discovers the test case, the only test method visible is the one marked as *Summary*. This is rendered using the description, i.e. _Login to web site_.
@@ -61,7 +61,7 @@ When the Summary method is executed, all the other test methods are discovered a
 This way, the test report matches the test case definition as closely as possible.
 
 ## How to use in VS 2017
-Create a new Xunit test project for .NET Core and then add a reference to Automation.TestFramework. The package is also available on NuGet.org.
+Create a new xUnit test project for .NET Core and then add a reference to Automation.TestFramework. The package is also available on NuGet.org.
 
 Add the following code:
 ```C#
@@ -75,7 +75,7 @@ Add the following code:
 The test framework supports .NET Core 2.0.
 
 ## Test runner compatibility
-The test framework is based on Xunit. It works with all test runners supported by Xunit.
+The test framework works with all test runners supported by xUnit.
 
 There is a _known issue_ with the Resharper test runner: the tests do not show under the Summary method. This is being researched.
 
@@ -116,7 +116,7 @@ These two are optional, as this behavior is already implemented in Xunit using c
 I.e. consider a scenario in which the setup can take a long time to execute. If `[Setup]` is used then this will show as a test on the test report.
 
 ## Test case execution
-The test framework preserves all of Xunit's features related to sharing context between tests (see https://xunit.github.io/docs/shared-context.html). Therefore let's leave fixtures out of this.
+The test framework preserves all of xUnit's features related to sharing context between tests (see https://xunit.github.io/docs/shared-context.html). Therefore let's leave fixtures out of this.
 
 Here's what happens when the Summary method is executed:
 1. The test case instance is created. _This will be shared between all tests_.
@@ -177,10 +177,10 @@ public class TestCase1 {...}
 When the exception occurs, the test frameowrk will create an instance of `MyTestNotification` and pass it the test case instance. This context should be enough for the user to observe the exception. Note that the exception _cannot be handled_ and it will be rethrown regardless what the notification does.
 
 ### Assembly fixtures
-Assembly fixtures are created before any of the tests in the assembly are run, similar to Xunit's collection fixtures. 
+Assembly fixtures are created before any of the tests in the assembly are run, similar to xUnit's collection fixtures. 
 Use attributes to specify them:
 ```C#
 [assembly: AssemblyFixture(typeof(AssemblyFixtureClass))]
 ```
 
-Note: this is copied from Xunit's Sample project.
+Note: this is copied from xUnit's Sample project.
