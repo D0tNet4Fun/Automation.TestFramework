@@ -1,17 +1,18 @@
-﻿using Xunit.Abstractions;
+﻿using Xunit;
+using Xunit.Abstractions;
 
 namespace Automation.TestFramework.Entities
 {
     internal interface ITest : Xunit.Abstractions.ITest
     {
-        object TestClassInstance { get; }
+        object TestClassInstance { get; set; }
 
         IMethodInfo MethodInfo { get; }
 
         new string DisplayName { get; set; }
     }
 
-    internal class Test : ITest
+    internal class Test : LongLivedMarshalByRefObject, ITest
     {
         public Test(ITestCase testCase, object testClassInstance, IMethodInfo methodInfo, string displayName)
         {
@@ -23,7 +24,7 @@ namespace Automation.TestFramework.Entities
 
         public ITestCase TestCase { get; }
 
-        public object TestClassInstance { get; internal set; }
+        public object TestClassInstance { get; set; }
 
         public IMethodInfo MethodInfo { get; }
 
