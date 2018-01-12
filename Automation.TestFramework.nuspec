@@ -15,8 +15,14 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>xunit automation</tags>
     <dependencies>
-      <dependency id="Humanizer.Core" version="2.2.0" />
-      <dependency id="xunit" version="2.3.1" />
+      <group targetFramework="net452">
+        <dependency id="Humanizer.Core" version="2.2.0" />
+        <dependency id="xunit" version="2.3.1" />
+      </group>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Humanizer.Core" version="2.2.0" />
+        <dependency id="xunit" version="2.3.1" />
+      </group>
     </dependencies>
   </metadata>
   <files>
