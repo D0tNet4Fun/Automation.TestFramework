@@ -29,9 +29,22 @@ namespace Automation.TestFramework.Execution
         {
             // ignore the input and use what we have
 
-            if (_testNotificationType == null)
-                return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
+            try
+            {
+                if (_testNotificationType == null)
+                    return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
 
+                return CallTestMethodWithNotification();
+            }
+            finally
+            {
+                // clear the test class instance from the test, to avoid being serialized
+                ((ITest)Test).TestClassInstance = null;
+            }
+        }
+
+        private object CallTestMethodWithNotification()
+        {
             try
             {
                 return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
