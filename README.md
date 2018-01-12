@@ -72,7 +72,9 @@ Add the following code:
 
 
 ## Supported frameworks
-The test framework supports .NET Core 2.0.
+The test framework supports .NET 4.5.2 or later and .NET Standard 2.0.
+
+Note: .NET Standard 2.0 can only be used with .NET Core 2.0.
 
 ## Test runner compatibility
 The test framework works with all test runners supported by xUnit.
