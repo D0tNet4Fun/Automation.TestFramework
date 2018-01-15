@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -178,7 +177,13 @@ namespace Automation.TestFramework.Entities
         }
 
         private static void UpdateTestDisplayName(ITest test, int index, int count)
-            => test.DisplayName = $"[{index}/{count}] {test.DisplayName}";
+            => test.DisplayName = $"[{index.ToString("D" + GetMaxNumberOfDigits(count))}/{count}] {test.DisplayName}";
+
+        private static int GetMaxNumberOfDigits(int value)
+        {
+            // https://stackoverflow.com/questions/4483886/how-can-i-get-a-count-of-the-total-number-of-digits-in-a-number
+            return (int)Math.Floor(Math.Log10(value) + 1);
+        }
 
         [DebuggerDisplay("Method {Method.Name} on {TestClassInstance.GetType().Name}")]
         private class TestMethod
