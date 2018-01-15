@@ -50,7 +50,7 @@ namespace Automation.TestFramework.Execution
                 _test.TestClassInstance = testClassInstance;
 
                 // discover the other tests
-                _testCaseDefinition = new TestCaseDefinition(TestCase, _test.TestClassInstance, _classFixtureMappings);
+                _testCaseDefinition = new TestCaseDefinition(new TestCaseWithoutTraits(TestCase), _test.TestClassInstance, _classFixtureMappings);
                 _testCaseDefinition.DiscoverTestCaseComponents();
             }
             catch (Exception ex)
@@ -141,7 +141,7 @@ namespace Automation.TestFramework.Execution
 
         private RunSummary FailBecauseOfException(Exception exception)
         {
-            var test = new XunitTest(TestCase, DisplayName);
+            var test = new XunitTest(new TestCaseWithoutTraits(TestCase), DisplayName);
 
             if (!MessageBus.QueueMessage(new TestStarting(test)))
                 CancellationTokenSource.Cancel();
