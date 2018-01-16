@@ -136,7 +136,7 @@ namespace Automation.TestFramework.Execution
         private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
         {
             var method = testMethod.ToRuntimeMethod();
-            return new TestRunner(test, MessageBus, TestClass, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
+            return new TestRunner(test, MessageBus, TestClass, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
         }
 
         private RunSummary FailBecauseOfException(Exception exception)
