@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net452</TargetFrameworks>
     <VersionPrefix>1.0.2</VersionPrefix>
-    <VersionSuffix>rc2</VersionSuffix>
+    <VersionSuffix>rc3</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
