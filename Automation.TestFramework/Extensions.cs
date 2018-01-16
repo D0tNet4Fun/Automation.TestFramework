@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Automation.TestFramework.Entities;
 using Humanizer;
 using Xunit;
@@ -39,5 +41,21 @@ namespace Automation.TestFramework
 
         public static string GetMessage(this AggregateException aggregateException, string separator)
             => separator + string.Join(separator, aggregateException.InnerExceptions.Select(e => e.Message));
+
+        public static Task ForEachAsync<T>(this IEnumerable<T> source, ParallelOptions parallelOptions, Func<T, Task> body)
+        {
+            // based on https://blogs.msdn.microsoft.com/pfxteam/2012/03/05/implementing-a-simple-foreachasync-part-2/
+            return Task.WhenAll(
+                from partition in Partitioner.Create(source).GetPartitions(parallelOptions.MaxDegreeOfParallelism)
+                select Task.Run(async () =>
+                {
+                    using (partition)
+                        while (partition.MoveNext())
+                        {
+                            parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+                            await body(partition.Current);
+                        }
+                }, parallelOptions.CancellationToken));
+        }
     }
 }
