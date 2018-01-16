@@ -12,8 +12,8 @@ namespace Automation.TestFramework.Execution
     {
         private readonly Type _testNotificationType;
 
-        public TestRunner(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
-            : base(test, messageBus, testClass, new object[0], testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
+        public TestRunner(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+            : base(test, messageBus, testClass, constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
         }
