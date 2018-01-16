@@ -130,6 +130,23 @@ Here's what happens when the Summary method is executed:
 
 Note: The tests may execute on different threads, although not in parallel.
 
+## Parallelism
+The test framework has the same behavior as xUnit, with one exception: _test cases that are in the same collection run in parallel_, unless specified otherwise. To disable parallelization for a test collection:
+
+```C#
+[CollectionDefinition("Serial", DisableParallelization = true)]
+public class CollectionDefinition : ICollectionFixture<CollectionFixture> { }
+
+[Collection("Serial")]
+[TestCase] public class TestCase1 {}
+
+[Collection("Serial")]
+[TestCase] public class TestCase2 {}
+```
+
+Note: it is a common scenario for more test cases to share a context, which is implemented as xUnit collection fixture. This implies the use of a collection definition and this way the test cases get to be part of the same collection, although they are in different classes.
+
+
 ## Other features
 
 ### Readability
