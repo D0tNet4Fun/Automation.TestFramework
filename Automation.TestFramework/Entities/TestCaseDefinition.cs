@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Automation.TestFramework.Entities
 {
@@ -66,11 +67,15 @@ namespace Automation.TestFramework.Entities
             InitializeList(_cleanups, count);
 
             // distribute the test case components into the lists
+            var testCount = 0;
             foreach (var pair in testCaseComponents)
             {
                 var attribute = pair.attribute;
                 var index = pair.attribute.Order - 1;
                 var test = CreateTest(pair.testMethod.TestClassInstance, pair.testMethod.Method, attribute);
+                var visibleActions = test.Actions.Where(action => action.ShowInTestReport).ToList();
+                var actionsCount = visibleActions.Count;
+                testCount += actionsCount != 0 ? actionsCount : 1;
 
                 if (attribute is SetupAttribute) TryUpdateList(_setups, index, test);
                 else if (attribute is PreconditionAttribute) TryUpdateList(_preconditions, index, test);
@@ -81,7 +86,7 @@ namespace Automation.TestFramework.Entities
 
             CheckForDuplicates(); // this can throw
 
-            UpdateDisplayNames(testCaseComponents.Count);
+            UpdateDisplayNames(testCount);
         }
 
         private void TryUpdateList(IList<ITest> list, int index, ITest test)
@@ -113,23 +118,23 @@ namespace Automation.TestFramework.Entities
             var testIndex = 0;
             foreach (var setup in Setups)
             {
-                UpdateTestDisplayName(setup, ++testIndex, testCount);
+                UpdateTestDisplayName(setup, ref testIndex, testCount);
             }
             foreach (var precondition in Preconditions)
             {
-                UpdateTestDisplayName(precondition, ++testIndex, testCount);
+                UpdateTestDisplayName(precondition, ref testIndex, testCount);
             }
             foreach (var step in Steps)
             {
-                UpdateTestDisplayName(step.Input, ++testIndex, testCount);
+                UpdateTestDisplayName(step.Input, ref testIndex, testCount);
                 if (step.ExpectedResult != null)
                 {
-                    UpdateTestDisplayName(step.ExpectedResult, ++testIndex, testCount);
+                    UpdateTestDisplayName(step.ExpectedResult, ref testIndex, testCount);
                 }
             }
             foreach (var cleanup in Cleanups)
             {
-                UpdateTestDisplayName(cleanup, ++testIndex, testCount);
+                UpdateTestDisplayName(cleanup, ref testIndex, testCount);
             }
         }
 
@@ -173,11 +178,45 @@ namespace Automation.TestFramework.Entities
         {
             if (string.IsNullOrEmpty(attribute.Description))
                 attribute.Description = testMethod.GetDisplayNameFromName();
-            return new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
+            var test = new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
+
+            var isComplexTestCase = typeof(ITestStep).IsAssignableFrom(testMethod.ReturnType.ToRuntimeType());
+            if (isComplexTestCase)
+            {
+                var testStep = (TestFramework.TestStep)testMethod.ToRuntimeMethod().Invoke(_testClassInstance, null);
+                var index = 1; // start at 1
+                test.Actions = testStep.Actions.Select(testAction => CreateTestFromAction(testAction, attribute, ref index)).ToList();
+            }
+
+            return test;
         }
 
-        private static void UpdateTestDisplayName(ITest test, int index, int count)
-            => test.DisplayName = $"[{index.ToString("D" + GetMaxNumberOfDigits(count))}/{count}] {test.DisplayName}";
+        private ITest CreateTestFromAction(TestStepAction testStepAction, TestCaseComponentAttribute parentAttribute, ref int index)
+        {
+            var displayName = testStepAction.Description;
+            if (testStepAction.ShowInTestReport)
+            {
+                var prefix = parentAttribute.DisplayName.Substring(0, parentAttribute.DisplayName.LastIndexOf(".") + 1); // i.e. [Expected result] 4.
+                displayName = $"{prefix}{index++}. {testStepAction.Description}"; // i.e. [Expected result] 4.1. Do something!
+            }
+            var test = new Test(_testCase, testStepAction.Action.Target, new ReflectionMethodInfo(testStepAction.Action.Method), displayName, testStepAction.ShowInTestReport);
+            return test;
+        }
+
+        private static void UpdateTestDisplayName(ITest test, ref int index, int count)
+        {
+            var visibleActions = test.Actions.Where(a => a.ShowInTestReport).ToList();
+            if (visibleActions.Count == 0)
+            {
+                var prefix = $"[{(++index).ToString("D" + GetMaxNumberOfDigits(count))}/{count}]";
+                test.DisplayName = prefix + " " + test.DisplayName;
+            }
+            else
+            {
+                foreach (var action in visibleActions)
+                    UpdateTestDisplayName(action, ref index, count);
+            }
+        }
 
         private static int GetMaxNumberOfDigits(int value)
         {

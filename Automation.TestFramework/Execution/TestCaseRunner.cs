@@ -133,10 +133,14 @@ namespace Automation.TestFramework.Execution
             return await runner.RunAsync();
         }
 
-        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        private ITestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
         {
-            var method = testMethod.ToRuntimeMethod();
-            return new TestRunner(test, MessageBus, TestClass, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
+            if (test.Actions.Count > 0)
+            {
+                return new ComplexTestRunner(test,
+                    t => new TestRunner(t, MessageBus, t.TestClassInstance.GetType(), ConstructorArguments, t.MethodInfo.ToRuntimeMethod(), skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType));
+            }
+            return new TestRunner(test, MessageBus, TestClass, ConstructorArguments, testMethod.ToRuntimeMethod(), skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
         }
 
         private RunSummary FailBecauseOfException(Exception exception)

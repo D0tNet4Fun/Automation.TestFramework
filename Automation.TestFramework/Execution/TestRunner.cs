@@ -8,7 +8,7 @@ using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Execution
 {
-    internal class TestRunner : TestRunner<ITestCase>
+    internal class TestRunner : TestRunner<ITestCase>, ITestRunner
     {
         private readonly Type _testNotificationType;
 
