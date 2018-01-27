@@ -173,9 +173,14 @@ namespace Automation.TestFramework.Entities
         {
             if (string.IsNullOrEmpty(attribute.Description))
                 attribute.Description = testMethod.GetDisplayNameFromName();
-            var isExpectedResult = typeof(IExpectedResult).IsAssignableFrom(testMethod.ReturnType.ToRuntimeType());
-            if (isExpectedResult)
+
+            var returnsExpectedResult = typeof(IExpectedResult).IsAssignableFrom(testMethod.ReturnType.ToRuntimeType());
+            if (returnsExpectedResult)
+            {
+                if (!(attribute is ExpectedResultAttribute))
+                    throw new TestCaseFailedException($"Test case step {testMethod.Name} is not allowed to return {nameof(IExpectedResult)} because it is not decorated using {nameof(ExpectedResultAttribute)}");
                 return new TestWithExpectedResult(_testCase, _testClassInstance, testMethod, attribute.DisplayName);
+            }
             return new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
         }
 
