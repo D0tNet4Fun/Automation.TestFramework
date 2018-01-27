@@ -8,12 +8,12 @@ using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Execution
 {
-    internal class TestRunner : TestRunner<ITestCase>
+    internal class TestRunner : TestRunner<ITestCase>, ITestRunner
     {
         private readonly Type _testNotificationType;
 
-        public TestRunner(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
-            : base(test, messageBus, testClass, constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
+        public TestRunner(ITest test, IMessageBus messageBus, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+            : base(test, messageBus, test.Instance.GetType(), constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
         }

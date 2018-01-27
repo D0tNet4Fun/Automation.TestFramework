@@ -5,7 +5,7 @@ namespace Automation.TestFramework.Entities
 {
     internal interface ITest : Xunit.Abstractions.ITest
     {
-        object TestClassInstance { get; set; }
+        object Instance { get; set; }
 
         IMethodInfo MethodInfo { get; }
 
@@ -14,17 +14,17 @@ namespace Automation.TestFramework.Entities
 
     internal class Test : LongLivedMarshalByRefObject, ITest
     {
-        public Test(ITestCase testCase, object testClassInstance, IMethodInfo methodInfo, string displayName)
+        public Test(ITestCase testCase, object instance, IMethodInfo methodInfo, string displayName)
         {
             TestCase = testCase;
-            TestClassInstance = testClassInstance;
+            Instance = instance;
             MethodInfo = methodInfo;
             DisplayName = displayName;
         }
 
         public ITestCase TestCase { get; }
 
-        public object TestClassInstance { get; set; }
+        public object Instance { get; set; }
 
         public IMethodInfo MethodInfo { get; }
 

@@ -16,7 +16,7 @@ namespace Automation.TestFramework.Execution
             : base(test, messageBus, testClass, new object[0], testMethod, new object[0], aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
-            _testClassInstance = test.TestClassInstance;
+            _testClassInstance = test.Instance;
         }
 
         protected override object CreateTestClass()
@@ -39,7 +39,7 @@ namespace Automation.TestFramework.Execution
             finally
             {
                 // clear the test class instance from the test, to avoid being serialized
-                ((ITest)Test).TestClassInstance = null;
+                ((ITest)Test).Instance = null;
             }
         }
 

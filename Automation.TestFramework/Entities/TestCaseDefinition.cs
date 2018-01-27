@@ -113,23 +113,23 @@ namespace Automation.TestFramework.Entities
             var testIndex = 0;
             foreach (var setup in Setups)
             {
-                UpdateTestDisplayName(setup, ++testIndex, testCount);
+                UpdateTestDisplayName(setup, ref testIndex, testCount);
             }
             foreach (var precondition in Preconditions)
             {
-                UpdateTestDisplayName(precondition, ++testIndex, testCount);
+                UpdateTestDisplayName(precondition, ref testIndex, testCount);
             }
             foreach (var step in Steps)
             {
-                UpdateTestDisplayName(step.Input, ++testIndex, testCount);
+                UpdateTestDisplayName(step.Input, ref testIndex, testCount);
                 if (step.ExpectedResult != null)
                 {
-                    UpdateTestDisplayName(step.ExpectedResult, ++testIndex, testCount);
+                    UpdateTestDisplayName(step.ExpectedResult, ref testIndex, testCount);
                 }
             }
             foreach (var cleanup in Cleanups)
             {
-                UpdateTestDisplayName(cleanup, ++testIndex, testCount);
+                UpdateTestDisplayName(cleanup, ref testIndex, testCount);
             }
         }
 
@@ -173,11 +173,19 @@ namespace Automation.TestFramework.Entities
         {
             if (string.IsNullOrEmpty(attribute.Description))
                 attribute.Description = testMethod.GetDisplayNameFromName();
+            var isExpectedResult = typeof(IExpectedResult).IsAssignableFrom(testMethod.ReturnType.ToRuntimeType());
+            if (isExpectedResult)
+                return new TestWithExpectedResult(_testCase, _testClassInstance, testMethod, attribute.DisplayName);
             return new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
         }
 
-        private static void UpdateTestDisplayName(ITest test, int index, int count)
-            => test.DisplayName = $"[{index.ToString("D" + GetMaxNumberOfDigits(count))}/{count}] {test.DisplayName}";
+        private static void UpdateTestDisplayName(ITest test, ref int index, int count)
+        {
+            var prefix = $"[{(++index).ToString("D" + GetMaxNumberOfDigits(count))}/{count}]";
+            if (test is ITestWithExpectedResult testWithExpectedResult)
+                testWithExpectedResult.DisplayNamePrefix = prefix + " " + test.DisplayName.Substring(0, test.DisplayName.IndexOf(".") + 1); // i.e. [2/2] [Expected result] 1.
+            test.DisplayName = prefix + " " + test.DisplayName;
+        }
 
         private static int GetMaxNumberOfDigits(int value)
         {
