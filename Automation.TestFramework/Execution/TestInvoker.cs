@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using ITest = Automation.TestFramework.Entities.ITest;
@@ -19,6 +20,8 @@ namespace Automation.TestFramework.Execution
             _testClassInstance = test.Instance;
         }
 
+        public object TestMethodResult { get; private set; }
+
         protected override object CreateTestClass()
         {
             // we already have a test class instance; return null here, otherwise this would mean this class owns the instance and therefore it could dispose it later
@@ -32,7 +35,7 @@ namespace Automation.TestFramework.Execution
             try
             {
                 if (_testNotificationType == null)
-                    return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
+                    return InvokeTestMethod();
 
                 return CallTestMethodWithNotification();
             }
@@ -47,7 +50,7 @@ namespace Automation.TestFramework.Execution
         {
             try
             {
-                return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
+                return InvokeTestMethod();
             }
             catch (TargetInvocationException e)
             {
@@ -62,6 +65,12 @@ namespace Automation.TestFramework.Execution
                 }
                 throw;
             }
+        }
+
+        private object InvokeTestMethod()
+        {
+            TestMethodResult = TestMethod.Invoke(_testClassInstance, TestMethodArguments);
+            return TestMethodResult;
         }
 
         private void Notify(Exception exception)

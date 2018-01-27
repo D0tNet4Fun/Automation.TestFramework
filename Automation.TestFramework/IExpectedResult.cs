@@ -34,16 +34,6 @@ namespace Automation.TestFramework
     {
         private readonly List<ExpectedResultAssertion> _assertions = new List<ExpectedResultAssertion>();
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="ExpectedResult"/>.
-        /// </summary>
-        public ExpectedResult()
-        {
-            Current = this;
-        }
-
-        [ThreadStatic] internal static ExpectedResult Current;
-
         /// <inheritdoc />
         public IExpectedResult Assert(string description, Action action)
         {

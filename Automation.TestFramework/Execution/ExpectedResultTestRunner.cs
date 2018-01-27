@@ -37,7 +37,8 @@ namespace Automation.TestFramework.Execution
             var result = await base.InvokeTestMethodAsync(aggregator);
             if (aggregator.HasExceptions) return result;
 
-            var assertions = ExpectedResult.Current.Assertions;
+            // the test method result should be available at this point and we can get the assertions
+            var assertions = ((ExpectedResult)TestMethodResult).Assertions;
             if (assertions.Length == 0)
             {
                 var exception = new ExpectedResultFailedException($"Expected result should have at least one assertion ({nameof(IExpectedResult.Assert)} or {nameof(IExpectedResult.Verify)})");
@@ -50,7 +51,7 @@ namespace Automation.TestFramework.Execution
             // if there are errors then throw a generic exception in the end
             if (_assertionSummary.Failed > 0)
             {
-                var errorMessage = "One or more of the expected results did not match.";
+                var errorMessage = "One or more of the assertions failed.";
                 if (count < assertions.Length) errorMessage += $" {assertions.Length - count} assertion(s) were skipped.";
                 throw new ExpectedResultFailedException(errorMessage);
             }
