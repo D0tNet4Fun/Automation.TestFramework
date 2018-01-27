@@ -4,17 +4,39 @@ using Automation.TestFramework.Entities;
 
 namespace Automation.TestFramework
 {
+    /// <summary>
+    /// Defines methods to specify multiple assertions for an expected result.
+    /// </summary>
     public interface IExpectedResult
     {
+        /// <summary>
+        /// Make an assertion whose failure stops the execution of the test case step.
+        /// </summary>
+        /// <param name="description">The description of the assertion.</param>
+        /// <param name="action">The action which defines the assertion.</param>
+        /// <returns>This instance.</returns>
         IExpectedResult Assert(string description, Action action);
 
+        /// <summary> 
+        /// Make an assertion whose failure does not stop the execution of the test case step, allowing the next assertions to execute. 
+        /// The test step will fail in the end.
+        /// </summary>
+        /// <param name="description">The description of the assertion.</param>
+        /// <param name="action">The action which defines the assertion.</param>
+        /// <returns>This instance.</returns>
         IExpectedResult Verify(string description, Action action);
     }
 
+    /// <summary>
+    /// Represents an expected result that has multiple assertions.
+    /// </summary>
     public class ExpectedResult : IExpectedResult
     {
-        private readonly List<ExpectedResultAction> _actions = new List<ExpectedResultAction>();
+        private readonly List<ExpectedResultAssertion> _assertions = new List<ExpectedResultAssertion>();
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ExpectedResult"/>.
+        /// </summary>
         public ExpectedResult()
         {
             Current = this;
@@ -22,29 +44,19 @@ namespace Automation.TestFramework
 
         [ThreadStatic] internal static ExpectedResult Current;
 
-        /// <summary>
-        /// Make an assertion. If it proves to be false then the next assertions or verifications will not be executed and the test will fail.
-        /// </summary>
-        /// <param name="description">The description of the assertion.</param>
-        /// <param name="action">The action which defines the assertion.</param>
-        /// <returns>This instance.</returns>
+        /// <inheritdoc />
         public IExpectedResult Assert(string description, Action action)
         {
             RequireDescription(description);
-            _actions.Add(new ExpectedResultAction(description, action, continueOnError: false));
+            _assertions.Add(new ExpectedResultAssertion(description, action, continueOnError: false));
             return this;
         }
 
-        /// <summary>
-        /// Make a verification. If it proves to be false then the next assertions or verifications will continue to be executed. The test will fail in the end.
-        /// </summary>
-        /// <param name="description">The description of the verification.</param>
-        /// <param name="action">The action which defines the verification.</param>
-        /// <returns>This instance.</returns>
+        /// <inheritdoc />
         public IExpectedResult Verify(string description, Action action)
         {
             RequireDescription(description);
-            _actions.Add(new ExpectedResultAction(description, action, continueOnError: true));
+            _assertions.Add(new ExpectedResultAssertion(description, action, continueOnError: true));
             return this;
         }
 
@@ -54,19 +66,6 @@ namespace Automation.TestFramework
                 throw new ArgumentException("Description must not be empty", nameof(description));
         }
 
-        internal ExpectedResultAction[] Actions => _actions.ToArray();
-
-        internal void AssignDisplayNameComponents(string prefix, int order)
-        {
-
-        }
-
-        internal void UpdateActionsDisplayName()
-        {
-            foreach (var action in _actions)
-            {
-
-            }
-        }
+        internal ExpectedResultAssertion[] Assertions => _assertions.ToArray();
     }
 }

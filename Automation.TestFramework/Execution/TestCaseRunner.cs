@@ -110,7 +110,8 @@ namespace Automation.TestFramework.Execution
                 if (testStep.ExpectedResult != null)
                 {
                     if (testStep.ExpectedResult is ITestWithExpectedResult testWithExpectedResult)
-                        runner = new ExpectedResultTestRunner(testWithExpectedResult, t => CreateTestRunner(t, t.MethodInfo), FailTestBecauseOfException);
+                        runner = new ExpectedResultTestRunner(testWithExpectedResult, t => CreateTestRunner(t, t.MethodInfo), FailTestBecauseOfException,
+                            MessageBus, ConstructorArguments, Aggregator, CancellationTokenSource, _testNotificationType);
                     else
                         runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo, skip ? skipReason : string.Empty);
 

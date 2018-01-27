@@ -2,13 +2,13 @@
 
 namespace Automation.TestFramework.Entities
 {
-    internal class ExpectedResultAction
+    internal class ExpectedResultAssertion
     {
         public string Description { get; }
         public Action Action { get; }
         public bool ContinueOnError { get; }
 
-        public ExpectedResultAction(string description, Action action, bool continueOnError)
+        public ExpectedResultAssertion(string description, Action action, bool continueOnError)
         {
             Description = description;
             Action = action;

@@ -48,7 +48,7 @@ namespace Automation.TestFramework.Execution
             return Tuple.Create(executionTime, output);
         }
 
-        private Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
+        protected virtual Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
             => new TestInvoker(Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource, _testNotificationType).RunAsync();
     }
 }
