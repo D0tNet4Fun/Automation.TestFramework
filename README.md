@@ -146,6 +146,58 @@ public class CollectionDefinition : ICollectionFixture<CollectionFixture> { }
 
 Note: it is a common scenario for more test cases to share a context, which is implemented as xUnit collection fixture. This implies the use of a collection definition and this way the test cases get to be part of the same collection, although they are in different classes.
 
+## Assertions in expected results
+Sometimes expected results may consist of more than one assertions whose outcomes determine if the test step passes or fails. I.e. consider a basic test case such as:
+_Precondition: User logs in_
+_Input: User goes to the Profile page_
+_Expected result: The user display name and email are correct_
+
+The expected result verifies 2 things: the user display name and the email address. They both need to be correct for the test to pass. They both need to be visible in the test report, in case one of them fails. The failure may be considered critical or not.
+
+### Assertions
+For the above test case, assume that when either of the user display name / email is incorrect then the other one does not need to be verified - the test fails anyways. This can be written as:
+```C#
+[ExpectedResult]
+private IExpectedResult ExpectedResult()
+{
+	return new ExpectedResult()
+		.Assert("Expect the user display name is correct", () => Assert.[...])
+		.Assert("Expect the email is correct", () => Assert.[...]);
+}
+```
+This code produces two tests for the test step. 
+
+When they both pass then the test report contains:
+_[3/3] Expected result: The user display name and email are correct_ - passed
+_[3/3] [Expected result] 1.1. Expect the user display name is correct_ - passed 
+_[3/3] [Expected result] 1.2. Expect the email is correct_ - passed
+
+When an assertion fails then the failure is shown in the test report, the next assertion is not executed at all, and the test step fails with a specific error. I.e. when the user display name is not correct:
+_[3/3] Expected result: The user display name and email are correct_ - failed: _One or more of the expected results did not match. 1 assertion(s) were skipped._
+_[3/3] [Expected result] 1.1. Expect the user display name is correct_ - failed
+
+### Verifications
+For the above test case, assume that when either of the user display name / email is incorrect then the other one needs to be checked too before the test fails. This can be written as:
+```C#
+[ExpectedResult]
+private IExpectedResult ExpectedResult()
+{
+	return new ExpectedResult()
+		.Verify("Expect the user display name is correct", () => Assert.[...])
+		.Verify("Expect the email is correct", () => Assert.[...]);
+}
+```
+When a verification fails then the failure is shown in the test report and the next assertion is executed. I.e. when the user display name is not correct but the email is, then:
+_[3/3] Expected result: The user display name and email are correct_ - failed: _One or more of the expected results did not match_
+_[3/3] [Expected result] 1.1. Expect the user display name is correct_ - passed
+_[3/3] [Expected result] 1.1. Expect the user display name is correct_ - failed
+
+### Execution
+The way to execute expected result test steps with multiple assertions is:
+1. The test method is executed (in this case, _ExpectedResult()_). The test framework uses its return value to determine what assertions need to be executed for the expected result.
+2. The assertions are executed in the order in which they were defined. For each of these assertions, the test framework executes the delegate. If the delegate throws an exception then the assertion fails with this exception.
+
+Note: the execution of assertions may not be executed on the same thread.
 
 ## Other features
 

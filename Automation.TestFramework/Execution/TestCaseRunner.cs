@@ -47,10 +47,10 @@ namespace Automation.TestFramework.Execution
                 _test = new Test(TestCase, null, TestCase.Method, DisplayName);
                 var timer = new ExecutionTimer();
                 var testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
-                _test.TestClassInstance = testClassInstance;
+                _test.Instance = testClassInstance;
 
                 // discover the other tests
-                _testCaseDefinition = new TestCaseDefinition(new TestCaseWithoutTraits(TestCase), _test.TestClassInstance, _classFixtureMappings);
+                _testCaseDefinition = new TestCaseDefinition(new TestCaseWithoutTraits(TestCase), _test.Instance, _classFixtureMappings);
                 _testCaseDefinition.DiscoverTestCaseComponents();
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace Automation.TestFramework.Execution
         protected override Task BeforeTestCaseFinishedAsync()
         {
             var timer = new ExecutionTimer();
-            Aggregator.Run(() => _test.DisposeTestClass(_test.TestClassInstance, MessageBus, timer, CancellationTokenSource));
+            Aggregator.Run(() => _test.DisposeTestClass(_test.Instance, MessageBus, timer, CancellationTokenSource));
 
             return base.BeforeTestCaseFinishedAsync();
         }
@@ -103,13 +103,18 @@ namespace Automation.TestFramework.Execution
 
             foreach (var testStep in _testCaseDefinition.Steps)
             {
-                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
+                ITestRunner runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
                 runSummary.Aggregate(await runner.RunAsync());
                 skip = runSummary.Failed > 0;
 
                 if (testStep.ExpectedResult != null)
                 {
-                    runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo, skip ? skipReason : string.Empty);
+                    if (testStep.ExpectedResult is ITestWithExpectedResult testWithExpectedResult)
+                        runner = new ExpectedResultTestRunner(testWithExpectedResult, t => CreateTestRunner(t, t.MethodInfo), FailTestBecauseOfException,
+                            MessageBus, ConstructorArguments, Aggregator, CancellationTokenSource, _testNotificationType);
+                    else
+                        runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo, skip ? skipReason : string.Empty);
+
                     runSummary.Aggregate(await runner.RunAsync());
                     skip = runSummary.Failed > 0;
                 }
@@ -133,16 +138,20 @@ namespace Automation.TestFramework.Execution
             return await runner.RunAsync();
         }
 
-        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        private ITestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
         {
             var method = testMethod.ToRuntimeMethod();
-            return new TestRunner(test, MessageBus, TestClass, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
+            return new TestRunner(test, MessageBus, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
         }
 
         private RunSummary FailBecauseOfException(Exception exception)
         {
             var test = new XunitTest(new TestCaseWithoutTraits(TestCase), DisplayName);
+            return FailTestBecauseOfException(test, exception);
+        }
 
+        private RunSummary FailTestBecauseOfException(Xunit.Abstractions.ITest test, Exception exception)
+        {
             if (!MessageBus.QueueMessage(new TestStarting(test)))
                 CancellationTokenSource.Cancel();
             else if (!MessageBus.QueueMessage(new TestFailed(test, 0, null, exception)))

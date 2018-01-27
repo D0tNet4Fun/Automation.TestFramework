@@ -8,17 +8,18 @@ using ITest = Automation.TestFramework.Entities.ITest;
 
 namespace Automation.TestFramework.Execution
 {
-    internal class TestRunner : TestRunner<ITestCase>
+    internal class TestRunner : TestRunner<ITestCase>, ITestRunner
     {
         private readonly Type _testNotificationType;
+        private TestInvoker _testInvoker;
 
-        public TestRunner(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
-            : base(test, messageBus, testClass, constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
+        public TestRunner(ITest test, IMessageBus messageBus, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+            : base(test, messageBus, test.Instance.GetType(), constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
         }
 
-        public new ITest Test => (ITest)base.Test;
+        public object TestMethodResult => _testInvoker.TestMethodResult;
 
         protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
         {
@@ -48,7 +49,10 @@ namespace Automation.TestFramework.Execution
             return Tuple.Create(executionTime, output);
         }
 
-        private Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
-            => new TestInvoker(Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource, _testNotificationType).RunAsync();
+        protected virtual Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
+        {
+            _testInvoker = new TestInvoker((ITest)Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource, _testNotificationType);
+            return _testInvoker.RunAsync();
+        }
     }
 }
