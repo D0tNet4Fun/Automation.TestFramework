@@ -103,18 +103,14 @@ namespace Automation.TestFramework.Execution
 
             foreach (var testStep in _testCaseDefinition.Steps)
             {
-                ITestRunner runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
+                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
                 runSummary.Aggregate(await runner.RunAsync());
                 skip = runSummary.Failed > 0;
 
                 if (testStep.ExpectedResult != null)
                 {
-                    if (testStep.ExpectedResult is ITestWithExpectedResult testWithExpectedResult)
-                        runner = new ExpectedResultTestRunner(testWithExpectedResult, t => CreateTestRunner(t, t.MethodInfo), FailTestBecauseOfException,
-                            MessageBus, ConstructorArguments, Aggregator, CancellationTokenSource, _testNotificationType);
-                    else
-                        runner = CreateTestRunner(testStep.ExpectedResult, testStep.ExpectedResult.MethodInfo, skip ? skipReason : string.Empty);
-
+                    runner = new ExpectedResultTestRunner(testStep.ExpectedResult, t => CreateTestRunner(t, t.MethodInfo),
+                                 MessageBus, ConstructorArguments, skip ? skipReason : string.Empty, Aggregator, CancellationTokenSource, _testNotificationType);
                     runSummary.Aggregate(await runner.RunAsync());
                     skip = runSummary.Failed > 0;
                 }
@@ -138,7 +134,7 @@ namespace Automation.TestFramework.Execution
             return await runner.RunAsync();
         }
 
-        private ITestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
         {
             var method = testMethod.ToRuntimeMethod();
             return new TestRunner(test, MessageBus, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);

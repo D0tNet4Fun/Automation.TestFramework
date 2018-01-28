@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Automation.TestFramework.Entities;
@@ -7,28 +6,21 @@ using Xunit.Sdk;
 
 namespace Automation.TestFramework.Execution
 {
-    internal class ExpectedResultTestRunner : TestRunner, ITestRunner
+    internal class ExpectedResultTestRunner : TestRunner
     {
-        private readonly ITestWithExpectedResult _test;
-        private readonly Func<ITest, ITestRunner> _testRunnerFactory;
-        private readonly Func<ITest, Exception, RunSummary> _failTestOnExceptionCallback;
-        private readonly RunSummary _assertionSummary; // used to track execution of assertions
+        public ExpectedResult ExpectedResult { get; }
 
-        public ExpectedResultTestRunner(ITestWithExpectedResult test, Func<ITest, ITestRunner> testRunnerFactory, Func<ITest, Exception, RunSummary> failTestOnExceptionCallback,
-            IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
-            : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), string.Empty, aggregator, cancellationTokenSource, testNotificationType)
+        public ExpectedResultTestRunner(ITest test, Func<ITest, TestRunner> testRunnerFactory,
+            IMessageBus messageBus, object[] constructorArguments, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+            : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), skipReason, aggregator, cancellationTokenSource, testNotificationType)
         {
-            _test = test;
-            _testRunnerFactory = testRunnerFactory;
-            _failTestOnExceptionCallback = failTestOnExceptionCallback;
-            _assertionSummary = new RunSummary();
+            ExpectedResult = new ExpectedResult(test, testRunnerFactory);
         }
 
-        public new async Task<RunSummary> RunAsync()
+        protected override void InitializeTestStep()
         {
-            var summary = await base.RunAsync();
-            summary.Aggregate(_assertionSummary);
-            return summary;
+            base.InitializeTestStep();
+            TestStep.Current.ExpectedResult = ExpectedResult;
         }
 
         protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
@@ -37,41 +29,15 @@ namespace Automation.TestFramework.Execution
             var result = await base.InvokeTestMethodAsync(aggregator);
             if (aggregator.HasExceptions) return result;
 
-            // the test method result should be available at this point and we can get the assertions
-            var assertions = ((ExpectedResult)TestMethodResult).Assertions;
-            if (assertions.Length == 0)
-            {
-                var exception = new ExpectedResultFailedException($"Expected result should have at least one assertion ({nameof(ExpectedResult.Assert)} or {nameof(ExpectedResult.Verify)})");
-                _assertionSummary.Aggregate(_failTestOnExceptionCallback(_test, exception));
-                return result;
-            }
-
-            var count = await ExecuteAssertionsAsync(assertions);
-
-            // if there are errors then throw a generic exception in the end
-            if (_assertionSummary.Failed > 0)
+            // check if the expected result has errors; if so then throw a generic exception in the end
+            if (ExpectedResult.RunSummary.Failed > 0)
             {
                 var errorMessage = "One or more of the assertions failed.";
-                if (count < assertions.Length) errorMessage += $" {assertions.Length - count} assertion(s) were skipped.";
+                if (ExpectedResult.RunSummary.Skipped > 0) errorMessage += $" {ExpectedResult.RunSummary.Skipped} assertion(s) were skipped.";
                 throw new ExpectedResultFailedException(errorMessage);
             }
 
             return result;
-        }
-
-        private async Task<int> ExecuteAssertionsAsync(IEnumerable<ExpectedResultAssertion> assertions)
-        {
-            var index = 1;
-            foreach (var assertion in assertions)
-            {
-                var displayName = $"{_test.DisplayNamePrefix}{index++}. {assertion.Description}";
-                var test = new ExpectedResultTest(_test.TestCase, assertion.Action.Target, new ReflectionMethodInfo(assertion.Action.Method), displayName, assertion.ContinueOnError);
-                var runner = _testRunnerFactory(test);
-                _assertionSummary.Aggregate(await runner.RunAsync());
-                if (_assertionSummary.Failed > 0 && !assertion.ContinueOnError)
-                    break;
-            }
-            return index - 1; // how many actions were executed
         }
     }
 }

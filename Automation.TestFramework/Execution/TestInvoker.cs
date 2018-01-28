@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using ITest = Automation.TestFramework.Entities.ITest;
@@ -11,16 +10,16 @@ namespace Automation.TestFramework.Execution
     internal class TestInvoker : TestInvoker<ITestCase>
     {
         private readonly Type _testNotificationType;
+        private readonly Action _initializeTestStep;
         private readonly object _testClassInstance;
 
-        public TestInvoker(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+        public TestInvoker(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, Action initializeTestStep)
             : base(test, messageBus, testClass, new object[0], testMethod, new object[0], aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
+            _initializeTestStep = initializeTestStep;
             _testClassInstance = test.Instance;
         }
-
-        public object TestMethodResult { get; private set; }
 
         protected override object CreateTestClass()
         {
@@ -69,8 +68,8 @@ namespace Automation.TestFramework.Execution
 
         private object InvokeTestMethod()
         {
-            TestMethodResult = TestMethod.Invoke(_testClassInstance, TestMethodArguments);
-            return TestMethodResult;
+            _initializeTestStep();
+            return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
         }
 
         private void Notify(Exception exception)

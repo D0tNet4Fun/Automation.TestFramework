@@ -15,9 +15,9 @@ namespace Automation.TestFramework.Tests
         public void Input() { }
 
         [ExpectedResult]
-        public ExpectedResult ExpectedResult()
+        public void ExpectedResult()
         {
-            return new ExpectedResult()
+            TestStep.Current.ExpectedResult
                 .Verify("This should fail but it should not stop the test", () => Assert.True(1 == 2))
                 .Verify("This should work", () =>
                 {
