@@ -5,24 +5,17 @@ using Automation.TestFramework.Entities;
 namespace Automation.TestFramework
 {
     /// <summary>
-    /// Represents an expected result that has multiple assertions.
+    /// Defines methods to specify multiple assertions for an expected result.
     /// </summary>
-    public class ExpectedResult
+    public interface IExpectedResult
     {
-        private readonly List<ExpectedResultAssertion> _assertions = new List<ExpectedResultAssertion>();
-
         /// <summary>
         /// Make an assertion whose failure stops the execution of the test case step.
         /// </summary>
         /// <param name="description">The description of the assertion.</param>
         /// <param name="action">The action which defines the assertion.</param>
         /// <returns>This instance.</returns>
-        public ExpectedResult Assert(string description, Action action)
-        {
-            RequireDescription(description);
-            _assertions.Add(new ExpectedResultAssertion(description, action, continueOnError: false));
-            return this;
-        }
+        IExpectedResult Assert(string description, Action action);
 
         /// <summary> 
         /// Make an assertion whose failure does not stop the execution of the test case step, allowing the next assertions to execute. 
@@ -31,7 +24,26 @@ namespace Automation.TestFramework
         /// <param name="description">The description of the assertion.</param>
         /// <param name="action">The action which defines the assertion.</param>
         /// <returns>This instance.</returns>
-        public ExpectedResult Verify(string description, Action action)
+        IExpectedResult Verify(string description, Action action);
+    }
+
+    /// <summary>
+    /// Represents an expected result that has multiple assertions.
+    /// </summary>
+    internal class ExpectedResult : IExpectedResult
+    {
+        private readonly List<ExpectedResultAssertion> _assertions = new List<ExpectedResultAssertion>();
+
+        /// <inheritdoc />
+        public IExpectedResult Assert(string description, Action action)
+        {
+            RequireDescription(description);
+            _assertions.Add(new ExpectedResultAssertion(description, action, continueOnError: false));
+            return this;
+        }
+
+        /// <inheritdoc />
+        public IExpectedResult Verify(string description, Action action)
         {
             RequireDescription(description);
             _assertions.Add(new ExpectedResultAssertion(description, action, continueOnError: true));

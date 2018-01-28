@@ -15,10 +15,10 @@ namespace Automation.TestFramework.Tests
         public void Input() { }
 
         [ExpectedResult]
-        public ExpectedResult ExpectedResult()
+        public void ExpectedResult()
         {
             Throw();
-            return new ExpectedResult()
+            TestStep.Current.ExpectedResult
                 .Verify("This will never be called", () => _called = true);
         }
 

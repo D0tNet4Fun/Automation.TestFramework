@@ -9,19 +9,20 @@ namespace Automation.TestFramework.Execution
 {
     internal class ExpectedResultTestRunner : TestRunner, ITestRunner
     {
-        private readonly ITestWithExpectedResult _test;
+        private readonly ITest _test;
         private readonly Func<ITest, ITestRunner> _testRunnerFactory;
-        private readonly Func<ITest, Exception, RunSummary> _failTestOnExceptionCallback;
-        private readonly RunSummary _assertionSummary; // used to track execution of assertions
+        private readonly RunSummary _assertionSummary; // used to track execution of assertions, if any
 
-        public ExpectedResultTestRunner(ITestWithExpectedResult test, Func<ITest, ITestRunner> testRunnerFactory, Func<ITest, Exception, RunSummary> failTestOnExceptionCallback,
-            IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
-            : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), string.Empty, aggregator, cancellationTokenSource, testNotificationType)
+        public ExpectedResult ExpectedResult { get; }
+
+        public ExpectedResultTestRunner(ITest test, Func<ITest, ITestRunner> testRunnerFactory,
+            IMessageBus messageBus, object[] constructorArguments, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+            : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), skipReason, aggregator, cancellationTokenSource, testNotificationType)
         {
             _test = test;
             _testRunnerFactory = testRunnerFactory;
-            _failTestOnExceptionCallback = failTestOnExceptionCallback;
             _assertionSummary = new RunSummary();
+            ExpectedResult = new ExpectedResult();
         }
 
         public new async Task<RunSummary> RunAsync()
@@ -31,21 +32,23 @@ namespace Automation.TestFramework.Execution
             return summary;
         }
 
+        protected override void InitializeTestStep()
+        {
+            base.InitializeTestStep();
+            TestStep.Current.ExpectedResult = ExpectedResult;
+        }
+
         protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
         {
             // run the test first to collect all the expected result's assertions; if it fails then exit.
             var result = await base.InvokeTestMethodAsync(aggregator);
             if (aggregator.HasExceptions) return result;
 
-            // the test method result should be available at this point and we can get the assertions
-            var assertions = ((ExpectedResult)TestMethodResult).Assertions;
-            if (assertions.Length == 0)
-            {
-                var exception = new ExpectedResultFailedException($"Expected result should have at least one assertion ({nameof(ExpectedResult.Assert)} or {nameof(ExpectedResult.Verify)})");
-                _assertionSummary.Aggregate(_failTestOnExceptionCallback(_test, exception));
-                return result;
-            }
+            // check if there are assertions defined; if not then return.
+            var assertions = ExpectedResult.Assertions;
+            if (assertions.Length == 0) return result;
 
+            // run the assertions as individual tests
             var count = await ExecuteAssertionsAsync(assertions);
 
             // if there are errors then throw a generic exception in the end
@@ -64,7 +67,10 @@ namespace Automation.TestFramework.Execution
             var index = 1;
             foreach (var assertion in assertions)
             {
-                var displayName = $"{_test.DisplayNamePrefix}{index++}. {assertion.Description}";
+                // testWithExpectedResult.DisplayNamePrefix = prefix + " " + test.DisplayName.Substring(0, test.DisplayName.IndexOf(".") + 1); // i.e. [2/2] [Expected result] 1.
+
+                //var displayName = $"{_test.DisplayNamePrefix}{index++}. {assertion.Description}";
+                var displayName = $"{index++}. {assertion.Description}";
                 var test = new ExpectedResultTest(_test.TestCase, assertion.Action.Target, new ReflectionMethodInfo(assertion.Action.Method), displayName, assertion.ContinueOnError);
                 var runner = _testRunnerFactory(test);
                 _assertionSummary.Aggregate(await runner.RunAsync());
