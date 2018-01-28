@@ -1,4 +1,5 @@
 ﻿using System;
+using Automation.TestFramework.Entities;
 
 namespace Automation.TestFramework
 {

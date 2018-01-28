@@ -103,7 +103,7 @@ namespace Automation.TestFramework.Execution
 
             foreach (var testStep in _testCaseDefinition.Steps)
             {
-                ITestRunner runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
+                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
                 runSummary.Aggregate(await runner.RunAsync());
                 skip = runSummary.Failed > 0;
 
@@ -134,7 +134,7 @@ namespace Automation.TestFramework.Execution
             return await runner.RunAsync();
         }
 
-        private ITestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
         {
             var method = testMethod.ToRuntimeMethod();
             return new TestRunner(test, MessageBus, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
