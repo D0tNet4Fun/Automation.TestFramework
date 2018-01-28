@@ -9,9 +9,9 @@ namespace Automation.TestFramework
     public class TestNotificationAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="TestNotificationAttribute"/>.
+        /// Initializes a new instance of the <see cref="TestNotificationAttribute"/> class.
         /// </summary>
-        /// <param name="type">The type of the notification. This must implement <see cref="ITestNotification"/>.</param>
+        /// <param name="type">The type of the notification. This must implement <see cref="ITestNotification"/> and have a constructor with a single argument of type <c>object</c>.</param>
         public TestNotificationAttribute(Type type)
         {
             if (!type.IsClass && !typeof(ITestNotification).IsAssignableFrom(type))
@@ -24,6 +24,9 @@ namespace Automation.TestFramework
             Type = type;
         }
 
+        /// <summary>
+        /// Gets the type of the notification.
+        /// </summary>
         public Type Type { get; }
     }
 }

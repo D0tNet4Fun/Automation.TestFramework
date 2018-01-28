@@ -12,11 +12,18 @@ namespace Automation.TestFramework
     {
         private readonly string _description;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SummaryAttribute"/> class.
+        /// </summary>
+        /// <param name="description">The user friendly description of the target test method.</param>
         public SummaryAttribute(string description = null)
         {
             _description = description;
         }
 
+        /// <summary>
+        /// Gets the display name.
+        /// </summary>
         public override string DisplayName
         {
             get => _description;

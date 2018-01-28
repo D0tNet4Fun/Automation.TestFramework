@@ -8,17 +8,16 @@ namespace Automation.TestFramework
     [Serializable]
     public class TestCaseFailedException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestCaseFailedException" /> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The error message.</param>
         public TestCaseFailedException(string message)
             : base(message)
         {
         }
 
-        public TestCaseFailedException(AggregateException aggregateException)
-            : base(aggregateException.Flatten().GetMessage(Environment.NewLine))
-        {
-
-        }
-
+        /// <inheritdoc />
         public override string StackTrace => string.Empty;
     }
 }
