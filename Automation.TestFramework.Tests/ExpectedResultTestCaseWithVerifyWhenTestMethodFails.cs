@@ -15,7 +15,7 @@ namespace Automation.TestFramework.Tests
         public void Input() { }
 
         [ExpectedResult]
-        public IExpectedResult ExpectedResult()
+        public ExpectedResult ExpectedResult()
         {
             Throw();
             return new ExpectedResult()

@@ -10,7 +10,7 @@
         private void Input() { }
 
         [ExpectedResult]
-        private IExpectedResult ExpectedResult()
+        private ExpectedResult ExpectedResult()
         {
             return new ExpectedResult();
         }
@@ -19,11 +19,11 @@
     [TestCase("id")]
     public class ExpectedResultTestCaseWhenAnotherTestStepReturnsAnExpectedResult
     {
-        [Summary("Expected result with input returning " + nameof(IExpectedResult))]
+        [Summary("Expected result with input returning " + nameof(TestFramework.ExpectedResult))]
         public void Summary() { }
 
         [Input]
-        private IExpectedResult Input() => new ExpectedResult();
+        private ExpectedResult Input() => new ExpectedResult();
 
         [ExpectedResult]
         private void ExpectedResult() { }

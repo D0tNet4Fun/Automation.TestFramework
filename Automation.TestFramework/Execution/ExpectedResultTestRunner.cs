@@ -41,7 +41,7 @@ namespace Automation.TestFramework.Execution
             var assertions = ((ExpectedResult)TestMethodResult).Assertions;
             if (assertions.Length == 0)
             {
-                var exception = new ExpectedResultFailedException($"Expected result should have at least one assertion ({nameof(IExpectedResult.Assert)} or {nameof(IExpectedResult.Verify)})");
+                var exception = new ExpectedResultFailedException($"Expected result should have at least one assertion ({nameof(ExpectedResult.Assert)} or {nameof(ExpectedResult.Verify)})");
                 _assertionSummary.Aggregate(_failTestOnExceptionCallback(_test, exception));
                 return result;
             }
