@@ -160,9 +160,9 @@ The expected result verifies 2 things: the user display name and the email addre
 For the above test case, assume that when either of the user display name / email is incorrect then the other one does not need to be verified - the test fails anyways. This can be written as:
 ```C#
 [ExpectedResult]
-private ExpectedResult ExpectedResult()
+private void ExpectedResult()
 {
-	return new ExpectedResult()
+	TestStep.Current.ExpectedResult
 		.Assert("Expect the user display name is correct", () => Assert.[...])
 		.Assert("Expect the email is correct", () => Assert.[...]);
 }
@@ -186,9 +186,9 @@ When an assertion fails then the failure is shown in the test report, the next a
 For the above test case, assume that when one of the user display name / email is incorrect then the other needs to be checked too before the test fails. This can be written as:
 ```C#
 [ExpectedResult]
-private ExpectedResult ExpectedResult()
+private void ExpectedResult()
 {
-	return new ExpectedResult()
+	TestStep.Current.ExpectedResult
 		.Verify("Expect the user display name is correct", () => Assert.[...])
 		.Verify("Expect the email is correct", () => Assert.[...]);
 }
@@ -201,11 +201,13 @@ When a verification fails then the failure is shown in the test report and the n
 ```
 
 ### Execution
-The way to execute expected result test steps with multiple assertions is:
-1. The test method is executed (in this case, _ExpectedResult()_). The test framework uses its return value to determine what assertions need to be executed for the expected result.
-2. The assertions are executed in the order in which they were defined. For each of these assertions, the test framework executes the delegate. If the delegate throws an exception then the assertion fails with this exception.
+Assertions and verifications are executed as soon as possible, on the same thread as the rest of the method. I.e. given the above test method, the order of execution is:
+1. Call 1st Verify
+2. Call 1st delegate
+3. Call 2nd Verify
+4. Call 2nd delegate
 
-Note: assertions may not be executed on the same thread.
+For asserts it is slighly different. As soon as a delegate throws, the next delegates are not called anymore but their assertions continue to be called in order to track how many assertions were skipped.
 
 ## Other features
 
