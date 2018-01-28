@@ -27,6 +27,8 @@
   </metadata>
   <files>
     <file src="Automation.TestFramework\bin\$Configuration$\netcoreapp2.0\Automation.TestFramework.dll" target="lib\netcoreapp2.0" />
+    <file src="Automation.TestFramework\bin\$Configuration$\netcoreapp2.0\Automation.TestFramework.xml" target="lib\netcoreapp2.0" />
     <file src="Automation.TestFramework\bin\$Configuration$\net452\Automation.TestFramework.dll" target="lib\net452" />
+    <file src="Automation.TestFramework\bin\$Configuration$\net452\Automation.TestFramework.xml" target="lib\net452" />
   </files>
 </package>
