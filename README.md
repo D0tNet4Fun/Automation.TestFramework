@@ -160,7 +160,7 @@ The expected result verifies 2 things: the user display name and the email addre
 For the above test case, assume that when either of the user display name / email is incorrect then the other one does not need to be verified - the test fails anyways. This can be written as:
 ```C#
 [ExpectedResult]
-private IExpectedResult ExpectedResult()
+private ExpectedResult ExpectedResult()
 {
 	return new ExpectedResult()
 		.Assert("Expect the user display name is correct", () => Assert.[...])
@@ -186,7 +186,7 @@ When an assertion fails then the failure is shown in the test report, the next a
 For the above test case, assume that when one of the user display name / email is incorrect then the other needs to be checked too before the test fails. This can be written as:
 ```C#
 [ExpectedResult]
-private IExpectedResult ExpectedResult()
+private ExpectedResult ExpectedResult()
 {
 	return new ExpectedResult()
 		.Verify("Expect the user display name is correct", () => Assert.[...])
