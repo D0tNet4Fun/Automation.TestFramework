@@ -89,27 +89,27 @@ namespace Automation.TestFramework.Execution
 
             foreach (var setup in _testCaseDefinition.Setups)
             {
-                var runner = CreateTestRunner(setup, setup.MethodInfo, skip ? skipReason : string.Empty);
+                var runner = CreateTestRunner(setup, setup.MethodInfo, skip ? skipReason : string.Empty, _testNotificationType);
                 runSummary.Aggregate(await runner.RunAsync());
                 skip = runSummary.Failed > 0;
             }
 
             foreach (var precondition in _testCaseDefinition.Preconditions)
             {
-                var runner = CreateTestRunner(precondition, precondition.MethodInfo, skip ? skipReason : string.Empty);
+                var runner = CreateTestRunner(precondition, precondition.MethodInfo, skip ? skipReason : string.Empty, _testNotificationType);
                 runSummary.Aggregate(await runner.RunAsync());
                 skip = runSummary.Failed > 0;
             }
 
             foreach (var testStep in _testCaseDefinition.Steps)
             {
-                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty);
+                var runner = CreateTestRunner(testStep.Input, testStep.Input.MethodInfo, skip ? skipReason : string.Empty, _testNotificationType);
                 runSummary.Aggregate(await runner.RunAsync());
                 skip = runSummary.Failed > 0;
 
                 if (testStep.ExpectedResult != null)
                 {
-                    runner = new ExpectedResultTestRunner(testStep.ExpectedResult, t => CreateTestRunner(t, t.MethodInfo),
+                    runner = new ExpectedResultTestRunner(testStep.ExpectedResult, t => CreateTestRunner(t, t.MethodInfo, null, null),
                                  MessageBus, ConstructorArguments, skip ? skipReason : string.Empty, Aggregator, CancellationTokenSource, _testNotificationType);
                     runSummary.Aggregate(await runner.RunAsync());
                     skip = runSummary.Failed > 0;
@@ -118,7 +118,7 @@ namespace Automation.TestFramework.Execution
 
             foreach (var cleanup in _testCaseDefinition.Cleanups)
             {
-                var runner = CreateTestRunner(cleanup, cleanup.MethodInfo);
+                var runner = CreateTestRunner(cleanup, cleanup.MethodInfo, null, _testNotificationType);
                 runSummary.Aggregate(await runner.RunAsync());
             }
 
@@ -130,14 +130,14 @@ namespace Automation.TestFramework.Execution
             if (hasErrors)
                 return FailBecauseOfException(new TestCaseFailedException("The test case steps were not completed successfully."));
 
-            var runner = CreateTestRunner(_test, TestCase.Method);
+            var runner = CreateTestRunner(_test, TestCase.Method, null, _testNotificationType);
             return await runner.RunAsync();
         }
 
-        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason = null)
+        private TestRunner CreateTestRunner(ITest test, IMethodInfo testMethod, string skipReason, Type testNotificationType)
         {
             var method = testMethod.ToRuntimeMethod();
-            return new TestRunner(test, MessageBus, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, _testNotificationType);
+            return new TestRunner(test, MessageBus, ConstructorArguments, method, skipReason, new ExceptionAggregator(Aggregator), CancellationTokenSource, testNotificationType);
         }
 
         private RunSummary FailBecauseOfException(Exception exception)
