@@ -15,6 +15,7 @@ namespace Automation.TestFramework.Execution
         private readonly Dictionary<Type, object> _classFixtureMappings;
         private readonly Type _testNotificationType;
         private Test _test; // the test bound to the test case
+        private object _testClassInstance;
         private TestCaseDefinition _testCaseDefinition;
         private Exception _testCaseDiscoveryException;
 
@@ -46,11 +47,10 @@ namespace Automation.TestFramework.Execution
                 // create the test class instance
                 _test = new Test(TestCase, null, TestCase.Method, DisplayName);
                 var timer = new ExecutionTimer();
-                var testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
-                _test.Instance = testClassInstance;
+                _testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
 
                 // discover the other tests
-                _testCaseDefinition = new TestCaseDefinition(new TestCaseWithoutTraits(TestCase), _test.Instance, _classFixtureMappings);
+                _testCaseDefinition = new TestCaseDefinition(new TestCaseWithoutTraits(TestCase), _testClassInstance, _classFixtureMappings);
                 _testCaseDefinition.DiscoverTestCaseComponents();
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace Automation.TestFramework.Execution
         protected override Task BeforeTestCaseFinishedAsync()
         {
             var timer = new ExecutionTimer();
-            Aggregator.Run(() => _test.DisposeTestClass(_test.Instance, MessageBus, timer, CancellationTokenSource));
+            Aggregator.Run(() => _test.DisposeTestClass(_testClassInstance, MessageBus, timer, CancellationTokenSource));
 
             return base.BeforeTestCaseFinishedAsync();
         }
@@ -130,6 +130,7 @@ namespace Automation.TestFramework.Execution
             if (hasErrors)
                 return FailBecauseOfException(new TestCaseFailedException("The test case steps were not completed successfully."));
 
+            _test.Instance = _testClassInstance;
             var runner = CreateTestRunner(_test, TestCase.Method, null, _testNotificationType);
             return await runner.RunAsync();
         }
