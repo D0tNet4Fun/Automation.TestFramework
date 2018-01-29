@@ -171,14 +171,14 @@ This code produces two tests for the test step.
 
 When they both pass then the test report contains:
 ```
-[3/3] Expected result: The user display name and email are correct - passed
-[3/3] [Expected result] 1.1. Expect the user display name is correct - passed 
+[3/3] Expected result: 1. The user display name and email are correct - passed
+[3/3] [Expected result] 1.1. Expect the user display name is correct - passed
 [3/3] [Expected result] 1.2. Expect the email is correct - passed
 ```
 
 When an assertion fails then the failure is shown in the test report, the next assertions are not executed at all, and the test step fails with a specific error. I.e. when the user display name is not correct:
 ```
-[3/3] Expected result: The user display name and email are correct - failed: One or more of the expected results did not match. 1 assertion(s) were skipped.
+[3/3] Expected result: 1. The user display name and email are correct - failed: One or more of the expected results did not match. 1 assertion(s) were skipped.
 [3/3] [Expected result] 1.1. Expect the user display name is correct - failed
 ```
 
@@ -193,11 +193,11 @@ private void ExpectedResult()
 		.Verify("Expect the email is correct", () => Assert.[...]);
 }
 ```
-When a verification fails then the failure is shown in the test report and the next assertion is executed. I.e. when the user display name is not correct but the email is, then:
+When a verification fails then the failure is shown in the test report and the next assertion/verification is executed. I.e. when the user display name is not correct but the email is, then:
 ```
-[3/3] Expected result: The user display name and email are correct - failed: One or more of the expected results did not match
-[3/3] [Expected result] 1.1. Expect the user display name is correct - passed
+[3/3] Expected result: 1. The user display name and email are correct - failed: One or more of the expected results did not match
 [3/3] [Expected result] 1.1. Expect the user display name is correct - failed
+[3/3] [Expected result] 1.2. Expect the email is correct - passed
 ```
 
 ### Execution
