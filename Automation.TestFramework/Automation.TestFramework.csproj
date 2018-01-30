@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net452</TargetFrameworks>
-    <VersionPrefix>1.0.2</VersionPrefix>
-     <VersionSuffix>rc4</VersionSuffix>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <!-- <VersionSuffix>rc4</VersionSuffix> -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
