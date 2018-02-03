@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.TestFramework.Tests", "Automation.TestFramework.Tests\Automation.TestFramework.Tests.csproj", "{FAE3A0AA-FA12-415E-A660-F48905DEB44D}"
 EndProject
@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{A93C6789
 	ProjectSection(SolutionItems) = preProject
 		Automation.TestFramework.nuspec = Automation.TestFramework.nuspec
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation.TestFramework.Tests.Desktop", "Automation.TestFramework.Tests.Desktop\Automation.TestFramework.Tests.Desktop.csproj", "{39D487A5-4B4B-4D00-835E-221092882839}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +28,10 @@ Global
 		{28685566-9827-44DA-88C1-A76DFC21871A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28685566-9827-44DA-88C1-A76DFC21871A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28685566-9827-44DA-88C1-A76DFC21871A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39D487A5-4B4B-4D00-835E-221092882839}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39D487A5-4B4B-4D00-835E-221092882839}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39D487A5-4B4B-4D00-835E-221092882839}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39D487A5-4B4B-4D00-835E-221092882839}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,5 @@
-﻿using Automation.TestFramework.Entities;
+﻿using System.Collections.Generic;
+using Automation.TestFramework.Entities;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -26,5 +27,20 @@ namespace Automation.TestFramework.Discovery
         /// <param name="factAttribute">The attribute that decorates the test method.</param>
         protected override IXunitTestCase CreateTestCase(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
             => new TestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod);
+
+        public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
+        {
+            var discoverer = new TestCaseComponentDiscoverer(testMethod.TestClass, DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), null);
+            discoverer.Discover(null);
+
+            IXunitTestCase testCase;
+
+            if (testMethod.Method.GetParameters().Any())
+                testCase = new ExecutionErrorTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod, "[Fact] methods are not allowed to have parameters. Did you mean to use [Theory]?");
+            else if (testMethod.Method.IsGenericMethodDefinition)
+                testCase = new ExecutionErrorTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod, "[Fact] methods are not allowed to be generic.");
+            else
+                testCase = CreateTestCase(discoveryOptions, testMethod, factAttribute);
+        }
     }
 }
