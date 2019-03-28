@@ -18,6 +18,8 @@ namespace Automation.TestFramework.Execution
             _testNotificationType = testNotificationType;
         }
 
+        public ExceptionAggregator ExceptionAggregator { get; set; }
+
         protected override async Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
         {
             // copy from XunitTestRunner
@@ -42,6 +44,9 @@ namespace Automation.TestFramework.Execution
                 output = testOutputHelper.Output;
                 testOutputHelper.Uninitialize();
             }
+
+            // save the exceptions that were thrown during the test, in case this is needed
+            ExceptionAggregator?.Aggregate(aggregator);
 
             return Tuple.Create(executionTime, output);
         }
