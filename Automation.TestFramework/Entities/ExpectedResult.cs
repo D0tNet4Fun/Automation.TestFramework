@@ -35,11 +35,14 @@ namespace Automation.TestFramework.Entities
         private readonly ITest _test;
         private readonly Func<ITest, TestRunner> _testRunnerFactory;
 
+        public ExceptionAggregator ExceptionAggregator { get; }
+
         public ExpectedResult(ITest test, Func<ITest, TestRunner> testRunnerFactory)
         {
             _test = test;
             _testRunnerFactory = testRunnerFactory;
             RunSummary = new RunSummary();
+            ExceptionAggregator = new ExceptionAggregator();
         }
 
         public RunSummary RunSummary { get; }
@@ -82,6 +85,7 @@ namespace Automation.TestFramework.Entities
 
             var test = new ExpectedResultTest(_test.TestCase, action.Target, new ReflectionMethodInfo(action.Method), displayName, continueOnError);
             var testRunner = _testRunnerFactory(test);
+            testRunner.ExceptionAggregator = ExceptionAggregator; // to persist the exceptions
             RunSummary.Aggregate(testRunner.RunAsync().GetAwaiter().GetResult());
 
             // if the assertion failed and we are not allowed to continue on error, then ensure all future assertions will be skipped

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Automation.TestFramework.Entities;
@@ -36,15 +37,31 @@ namespace Automation.TestFramework.Execution
             // check if the expected result has errors; if so then throw a generic exception in the end
             if (ExpectedResult.RunSummary.Failed > 0)
             {
-                var errorMessage = "One or more of the assertions failed.";
-                if (ExpectedResult.RunSummary.Skipped > 0) errorMessage += $" {ExpectedResult.RunSummary.Skipped} assertion(s) were skipped.";
-
-                var expectedException = new ExpectedResultFailedException(errorMessage);
-                if (_testNotificationType != null) TryNotify(expectedException);
-                throw expectedException;
+                var exception = CreateExpectedResultFailedException();
+                if (_testNotificationType != null) TryNotify(exception);
+                throw exception;
             }
 
             return result;
+        }
+
+        private ExpectedResultFailedException CreateExpectedResultFailedException()
+        {
+            var errorMessage = "One or more of the assertions failed.";
+            if (ExpectedResult.RunSummary.Skipped > 0) errorMessage += $" {ExpectedResult.RunSummary.Skipped} assertion(s) were skipped.";
+
+            IReadOnlyCollection<Exception> exceptions;
+            var exception = ExpectedResult.ExceptionAggregator.ToException();
+            if (exception is AggregateException aggregateException)
+            {
+                exceptions = aggregateException.InnerExceptions;
+            }
+            else
+            {
+                exceptions = new[] { exception };
+            }
+
+            return new ExpectedResultFailedException(errorMessage, exceptions);
         }
 
         private void TryNotify(Exception exception)
