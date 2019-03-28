@@ -90,4 +90,44 @@ namespace Automation.TestFramework.Tests
             Assert.Null(GlobalTestNotification.Instance);
         }
     }
+
+    [TestCase("ID")]
+    [TestNotification(typeof(ClassTestNotification))]
+    public class TestCaseWithErrorsInsideExpectedResultsAndClassNotification : IDisposable
+    {
+        public static Exception Exception { get; } = new Exception("error");
+
+        [Summary("Test case with errors and class notification")]
+        public void Summary()
+        {
+
+        }
+
+        [Input(1)]
+        public void Input()
+        {
+            
+        }
+
+        [ExpectedResult(1)]
+        public void ExpectedResult()
+        {
+            TestStep.Current.ExpectedResult
+                .Assert("fail", () => throw Exception)
+                ;
+        }
+
+        public void Dispose()
+        {
+            // the instance passed to ClassTestNotification should be this
+            Assert.Same(this, ClassTestNotification.Instance.TestClassInstance);
+
+            // ExpectedResultFailedException should be passed to ClassTestNotification
+            Assert.NotNull(ClassTestNotification.Instance.Error);
+            Assert.IsType<ExpectedResultFailedException>(ClassTestNotification.Instance.Error);
+
+            // nothing should have been passed to GlobalTestNotification
+            Assert.Null(GlobalTestNotification.Instance);
+        }
+    }
 }

@@ -110,7 +110,7 @@ namespace Automation.TestFramework.Execution
                 if (testStep.ExpectedResult != null)
                 {
                     runner = new ExpectedResultTestRunner(testStep.ExpectedResult, t => CreateTestRunner(t, t.MethodInfo, null, null),
-                                 MessageBus, ConstructorArguments, skip ? skipReason : string.Empty, Aggregator, CancellationTokenSource, _testNotificationType);
+                                 MessageBus, ConstructorArguments, skip ? skipReason : string.Empty, Aggregator, CancellationTokenSource, _testNotificationType, _testClassInstance);
                     runSummary.Aggregate(await runner.RunAsync());
                     skip = runSummary.Failed > 0;
                 }
