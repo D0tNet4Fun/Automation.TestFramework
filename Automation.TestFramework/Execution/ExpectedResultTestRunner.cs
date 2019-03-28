@@ -8,12 +8,16 @@ namespace Automation.TestFramework.Execution
 {
     internal class ExpectedResultTestRunner : TestRunner
     {
+        private readonly Type _testNotificationType;
+        private readonly object _testClassInstance;
         public ExpectedResult ExpectedResult { get; }
 
         public ExpectedResultTestRunner(ITest test, Func<ITest, TestRunner> testRunnerFactory,
-            IMessageBus messageBus, object[] constructorArguments, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+            IMessageBus messageBus, object[] constructorArguments, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, object testClassInstance)
             : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), skipReason, aggregator, cancellationTokenSource, testNotificationType)
         {
+            _testNotificationType = testNotificationType;
+            _testClassInstance = testClassInstance;
             ExpectedResult = new ExpectedResult(test, testRunnerFactory);
         }
 
@@ -34,10 +38,27 @@ namespace Automation.TestFramework.Execution
             {
                 var errorMessage = "One or more of the assertions failed.";
                 if (ExpectedResult.RunSummary.Skipped > 0) errorMessage += $" {ExpectedResult.RunSummary.Skipped} assertion(s) were skipped.";
-                throw new ExpectedResultFailedException(errorMessage);
+
+                var expectedException = new ExpectedResultFailedException(errorMessage);
+                if (_testNotificationType != null) TryNotify(expectedException);
+                throw expectedException;
             }
 
             return result;
+        }
+
+        private void TryNotify(Exception exception)
+        {
+            try
+            {
+                var notification = (ITestNotification)Activator.CreateInstance(_testNotificationType, _testClassInstance);
+                notification.OnError(exception);
+            }
+            catch (Exception inner)
+            {
+                var error = $"Error in test notification of type {_testNotificationType.Name}: {inner}";
+                // todo where to output this?
+            }
         }
     }
 }
