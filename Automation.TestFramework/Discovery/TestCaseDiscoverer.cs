@@ -25,6 +25,6 @@ namespace Automation.TestFramework.Discovery
         /// <param name="testMethod">The test method.</param>
         /// <param name="factAttribute">The attribute that decorates the test method.</param>
         protected override IXunitTestCase CreateTestCase(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
-            => new TestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod);
+            => new TestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod);
     }
 }
