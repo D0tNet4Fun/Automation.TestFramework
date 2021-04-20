@@ -49,6 +49,10 @@ namespace Automation.TestFramework.Entities
 
         public IMethodInfo Method => _source.Method;
 
+        public Exception InitializationException => _source.InitializationException;
+
+        public int Timeout => _source.Timeout;
+
         public Dictionary<string, List<string>> Traits { get; }
     }
 }
