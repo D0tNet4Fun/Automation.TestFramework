@@ -2,13 +2,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata minClientVersion="2.12">
     <id>Automation.TestFramework</id>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <title>Automation.TestFramework</title>
     <owners>DotNet4Fun</owners>
     <authors>DotNet4Fun</authors>
     <copyright>Copyright (C) 2019 DotNet4Fun</copyright>
     <summary>Xunit-based test framework for automating test cases.</summary>
-    <description>Xunit-based test framework for automating test cases. Supports .NET 4.5.2 or later and .NET Core 2.0.</description>
+    <description>Xunit-based test framework for automating test cases. Supports .NET 4.5.2 or later and .NET Core 2.1.</description>
     <language>en-US</language>
     <projectUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</projectUrl>
     <license type="expression">MIT</license>
@@ -16,18 +16,18 @@
     <tags>xunit automation</tags>
     <dependencies>
       <group targetFramework="net452">
-        <dependency id="Humanizer.Core" version="2.2.0" />
-        <dependency id="xunit" version="2.3.1" />
+        <dependency id="Humanizer.Core" version="2.8.26" />
+        <dependency id="xunit" version="2.4.1" />
       </group>
-      <group targetFramework="netcoreapp2.0">
-        <dependency id="Humanizer.Core" version="2.2.0" />
-        <dependency id="xunit" version="2.3.1" />
+      <group targetFramework="netcoreapp2.1">
+        <dependency id="Humanizer.Core" version="2.8.26" />
+        <dependency id="xunit" version="2.4.1" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Automation.TestFramework\bin\$Configuration$\netcoreapp2.0\Automation.TestFramework.dll" target="lib\netcoreapp2.0" />
-    <file src="Automation.TestFramework\bin\$Configuration$\netcoreapp2.0\Automation.TestFramework.xml" target="lib\netcoreapp2.0" />
+    <file src="Automation.TestFramework\bin\$Configuration$\netcoreapp2.1\Automation.TestFramework.dll" target="lib\netcoreapp2.1" />
+    <file src="Automation.TestFramework\bin\$Configuration$\netcoreapp2.1\Automation.TestFramework.xml" target="lib\netcoreapp2.1" />
     <file src="Automation.TestFramework\bin\$Configuration$\net452\Automation.TestFramework.dll" target="lib\net452" />
     <file src="Automation.TestFramework\bin\$Configuration$\net452\Automation.TestFramework.xml" target="lib\net452" />
   </files>
