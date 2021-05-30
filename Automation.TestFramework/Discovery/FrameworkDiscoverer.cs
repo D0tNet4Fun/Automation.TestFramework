@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -9,6 +10,7 @@ namespace Automation.TestFramework.Discovery
         public FrameworkDiscoverer(IAssemblyInfo assemblyInfo, ISourceInformationProvider sourceProvider, IMessageSink diagnosticMessageSink, IXunitTestCollectionFactory collectionFactory = null)
             : base(assemblyInfo, sourceProvider, diagnosticMessageSink, collectionFactory)
         {
+            //Debugger.Launch();
         }
 
         protected override bool IsValidTestClass(ITypeInfo type)

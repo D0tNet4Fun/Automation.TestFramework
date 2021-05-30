@@ -11,10 +11,12 @@ namespace Automation.TestFramework.Entities
     internal class TestCaseWithoutTraits : LongLivedMarshalByRefObject, IXunitTestCase
     {
         private readonly IXunitTestCase _source;
+        private readonly IMethodInfo _methodInfo;
 
-        public TestCaseWithoutTraits(IXunitTestCase source)
+        public TestCaseWithoutTraits(IXunitTestCase source, IMethodInfo methodInfo)
         {
             _source = source;
+            _methodInfo = methodInfo;
             Traits = new Dictionary<string, List<string>>();
         }
 
@@ -47,7 +49,7 @@ namespace Automation.TestFramework.Entities
         public Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
             => _source.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource);
 
-        public IMethodInfo Method => _source.Method;
+        public IMethodInfo Method => _methodInfo;
 
         public Dictionary<string, List<string>> Traits { get; }
     }

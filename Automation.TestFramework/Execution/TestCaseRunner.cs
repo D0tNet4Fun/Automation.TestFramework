@@ -12,6 +12,7 @@ namespace Automation.TestFramework.Execution
 {
     internal class TestCaseRunner : TestCaseRunner<IXunitTestCase>
     {
+        private readonly IMessageSink _diagnosticMessageSink;
         private readonly Dictionary<Type, object> _classFixtureMappings;
         private readonly Type _testNotificationType;
         private Test _test; // the test bound to the test case
@@ -19,12 +20,13 @@ namespace Automation.TestFramework.Execution
         private TestCaseDefinition _testCaseDefinition;
         private Exception _testCaseDiscoveryException;
 
-        public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Dictionary<Type, object> classFixtureMappings, Type testNotificationType)
-            : base(testCase, messageBus, aggregator, cancellationTokenSource)
+        public TestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Dictionary<Type, object> classFixtureMappings, Type testNotificationType)
+            : base(testCase, new MyMessageBus(messageBus), aggregator, cancellationTokenSource)
         {
             DisplayName = displayName;
             SkipReason = skipReason;
             ConstructorArguments = constructorArguments;
+            _diagnosticMessageSink = diagnosticMessageSink;
             _classFixtureMappings = classFixtureMappings;
             _testNotificationType = testNotificationType;
             TestClass = TestCase.TestMethod.TestClass.Class.ToRuntimeType();
@@ -50,7 +52,7 @@ namespace Automation.TestFramework.Execution
                 _testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
 
                 // discover the other tests
-                _testCaseDefinition = new TestCaseDefinition(new TestCaseWithoutTraits(TestCase), _testClassInstance, _classFixtureMappings);
+                _testCaseDefinition = new TestCaseDefinition(TestCase, _testClassInstance, _classFixtureMappings, _diagnosticMessageSink);
                 _testCaseDefinition.DiscoverTestCaseComponents();
             }
             catch (Exception ex)
@@ -143,7 +145,7 @@ namespace Automation.TestFramework.Execution
 
         private RunSummary FailBecauseOfException(Exception exception)
         {
-            var test = new XunitTest(new TestCaseWithoutTraits(TestCase), DisplayName);
+            var test = new XunitTest(new TestCaseWithoutTraits(TestCase, TestCase.Method), DisplayName);
             return FailTestBecauseOfException(test, exception);
         }
 

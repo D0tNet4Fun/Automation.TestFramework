@@ -33,7 +33,7 @@ namespace Automation.TestFramework.Entities
         }
 
         public override Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
-            => new TestCaseRunner(this, DisplayName, SkipReason, constructorArguments, messageBus, aggregator, cancellationTokenSource, _classFixtureMappings, _testNotificationType).RunAsync();
+            => new TestCaseRunner(this, DisplayName, SkipReason, diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource, _classFixtureMappings, _testNotificationType).RunAsync();
 
         internal void SetClassFixtureMappings(Dictionary<Type, object> classFixtureMappings)
         {

@@ -64,6 +64,6 @@ namespace Automation.TestFramework.Execution
         }
 
         protected override Task<RunSummary> RunTestCollectionAsync(IMessageBus messageBus, ITestCollection testCollection, IEnumerable<IXunitTestCase> testCases, CancellationTokenSource cancellationTokenSource)
-            => new TestCollectionRunner(testCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator(Aggregator), cancellationTokenSource, _assemblyFixtureMappings, _testNotificationType, ExecutionOptions.MaxParallelThreadsOrDefault()).RunAsync();
+            => new TestCollectionRunner(testCollection, testCases, DiagnosticMessageSink, new MyMessageBus(messageBus), TestCaseOrderer, new ExceptionAggregator(Aggregator), cancellationTokenSource, _assemblyFixtureMappings, _testNotificationType, ExecutionOptions.MaxParallelThreadsOrDefault()).RunAsync();
     }
 }

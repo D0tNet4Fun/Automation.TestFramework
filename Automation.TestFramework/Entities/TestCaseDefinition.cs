@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Automation.TestFramework.Entities
 {
     internal class TestCaseDefinition
     {
-        private readonly ITestCase _testCase;
+        private readonly IXunitTestCase _testCase;
         private readonly object _testClassInstance;
         private readonly Dictionary<Type, object> _classFixtureMappings;
+        private readonly IMessageSink _diagnosticMessageSink;
         private readonly ITestClass _testClass;
         private readonly List<ITest> _setups = new List<ITest>();
         private readonly List<ITest> _preconditions = new List<ITest>();
@@ -19,11 +21,12 @@ namespace Automation.TestFramework.Entities
         private readonly List<ITest> _cleanups = new List<ITest>();
         private readonly Dictionary<IMethodInfo, IMethodInfo> _duplicates = new Dictionary<IMethodInfo, IMethodInfo>();
 
-        public TestCaseDefinition(ITestCase testCase, object testClassInstance, Dictionary<Type, object> classFixtureMappings)
+        public TestCaseDefinition(IXunitTestCase testCase, object testClassInstance, Dictionary<Type, object> classFixtureMappings, IMessageSink diagnosticMessageSink)
         {
             _testCase = testCase;
             _testClassInstance = testClassInstance;
             _classFixtureMappings = classFixtureMappings;
+            _diagnosticMessageSink = diagnosticMessageSink;
             _testClass = testCase.TestMethod.TestClass;
         }
 
@@ -173,7 +176,11 @@ namespace Automation.TestFramework.Entities
         {
             if (string.IsNullOrEmpty(attribute.Description))
                 attribute.Description = testMethod.GetDisplayNameFromName();
-            return new Test(_testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
+
+            //var tc = new XunitTestCase(_diagnosticMessageSink, TestMethodDisplay.Method, new Xunit.Sdk.TestMethod(_testClass, testMethod));
+            var testCase = new TestCaseWithoutTraits(_testCase, testMethod);
+            //testCase.TestMethod = new Xunit.Sdk.TestMethod(_testCase.TestMethod.TestClass, testMethod);
+            return new Test(testCase, testClassInstance, testMethod, attribute.DisplayName); // assign the test to the test case
         }
 
         private static void UpdateTestDisplayName(ITest test, ref int index, int count)
