@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using ITest = Automation.TestFramework.Entities.ITest;
@@ -10,21 +11,27 @@ namespace Automation.TestFramework.Execution
     internal class TestInvoker : TestInvoker<ITestCase>
     {
         private readonly Type _testNotificationType;
-        private readonly Action _initializeTestStep;
         private readonly object _testClassInstance;
+        private readonly TestStepContext _testStepContext;
 
-        public TestInvoker(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, Action initializeTestStep)
+        public TestInvoker(ITest test, IMessageBus messageBus, Type testClass, MethodInfo testMethod, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, TestStepContext testStepContext)
             : base(test, messageBus, testClass, new object[0], testMethod, new object[0], aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
-            _initializeTestStep = initializeTestStep;
             _testClassInstance = test.Instance;
+            _testStepContext = testStepContext;
         }
 
         protected override object CreateTestClass()
         {
             // we already have a test class instance; return null here, otherwise this would mean this class owns the instance and therefore it could dispose it later
             return null;
+        }
+
+        protected override Task BeforeTestMethodInvokedAsync()
+        {
+            _testStepContext?.Initialize();
+            return base.BeforeTestMethodInvokedAsync();
         }
 
         protected override object CallTestMethod(object testClassInstance)
@@ -41,7 +48,7 @@ namespace Automation.TestFramework.Execution
             finally
             {
                 // clear the test class instance from the test, to avoid being serialized
-                ((ITest)Test).Instance = null;
+                ((ITest) Test).Instance = null;
             }
         }
 
@@ -68,7 +75,6 @@ namespace Automation.TestFramework.Execution
 
         private object InvokeTestMethod()
         {
-            _initializeTestStep();
             return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
         }
 
@@ -76,6 +82,18 @@ namespace Automation.TestFramework.Execution
         {
             var notification = (ITestNotification)Activator.CreateInstance(_testNotificationType, _testClassInstance);
             notification.OnError(exception);
+        }
+
+        protected override async Task AfterTestMethodInvokedAsync()
+        {
+            try
+            {
+                await base.AfterTestMethodInvokedAsync();
+            }
+            finally
+            {
+                _testStepContext?.Dispose();
+            }
         }
     }
 }
