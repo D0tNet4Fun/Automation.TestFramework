@@ -27,6 +27,8 @@ namespace Automation.TestFramework.Entities
             _testClass = testCase.TestMethod.TestClass;
         }
 
+        public string Source { get; private set; }
+
         public IList<ITest> Setups => _setups;
 
         public IList<ITest> Preconditions => _preconditions;
@@ -42,6 +44,10 @@ namespace Automation.TestFramework.Entities
 
         public void DiscoverTestCaseComponents()
         {
+            // get the location (aka source) of the class in which the test case is defined
+            var testCaseAttribute = _testClass.Class.GetCustomAttributes(typeof(TestCaseAttribute)).Single();
+            Source = testCaseAttribute.GetNamedArgument<string>(nameof(TestCaseAttribute.Source));
+
             var testMethods = GetTestMethods();
 
             // get the test methods which are test case components, and their attribute

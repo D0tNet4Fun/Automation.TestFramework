@@ -10,12 +10,15 @@ namespace Automation.TestFramework.Execution
 {
     internal class TestRunner : TestRunner<ITestCase>
     {
+        public string Source { get; }
+
         private readonly Type _testNotificationType;
 
-        public TestRunner(ITest test, IMessageBus messageBus, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
+        public TestRunner(ITest test, IMessageBus messageBus, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, string source)
             : base(test, messageBus, test.Instance.GetType(), constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
+            Source = source;
         }
 
         public ExceptionAggregator ExceptionAggregator { get; set; }
@@ -52,11 +55,11 @@ namespace Automation.TestFramework.Execution
         }
 
         protected virtual Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
-            => new TestInvoker((ITest)Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource, _testNotificationType, InitializeTestStep).RunAsync();
+            => new TestInvoker((ITest)Test, MessageBus, TestClass, TestMethod, aggregator, CancellationTokenSource, _testNotificationType, CreateTestStepContext()).RunAsync();
 
-        /// <summary>
-        /// Called by the test invoker before the test method is invoked, on the thread on which the test method will be invoked.
-        /// </summary>
-        protected virtual void InitializeTestStep() => TestStep.InitializeCurrent();
+        protected virtual TestStepContext CreateTestStepContext()
+        {
+            return new TestStepContext(Source, null);
+        }
     }
 }
