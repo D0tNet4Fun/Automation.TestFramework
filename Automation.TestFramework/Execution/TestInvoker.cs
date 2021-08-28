@@ -37,51 +37,22 @@ namespace Automation.TestFramework.Execution
         protected override object CallTestMethod(object testClassInstance)
         {
             // ignore the input and use what we have
-
-            try
-            {
-                if (_testNotificationType == null)
-                    return InvokeTestMethod();
-
-                return CallTestMethodWithNotification();
-            }
-            finally
-            {
-                // clear the test class instance from the test, to avoid being serialized
-                ((ITest) Test).Instance = null;
-            }
+            return base.CallTestMethod(_testClassInstance);
         }
 
-        private object CallTestMethodWithNotification()
+        private void TryNotify()
         {
             try
             {
-                return InvokeTestMethod();
+                var notification = (ITestNotification)Activator.CreateInstance(_testNotificationType, _testClassInstance);
+                var exception = Aggregator.ToException();
+                notification.OnError(exception);
             }
-            catch (TargetInvocationException e)
+            catch (Exception inner)
             {
-                try
-                {
-                    Notify(e.InnerException);
-                }
-                catch (Exception inner)
-                {
-                    var error = $"Error in test notification of type {_testNotificationType.Name}: {inner}";
-                    // todo where to output this?
-                }
-                throw;
+                var error = $"Error in test notification of type {_testNotificationType.Name}: {inner}";
+                // todo where to output this?
             }
-        }
-
-        private object InvokeTestMethod()
-        {
-            return TestMethod.Invoke(_testClassInstance, TestMethodArguments);
-        }
-
-        private void Notify(Exception exception)
-        {
-            var notification = (ITestNotification)Activator.CreateInstance(_testNotificationType, _testClassInstance);
-            notification.OnError(exception);
         }
 
         protected override async Task AfterTestMethodInvokedAsync()
@@ -89,10 +60,18 @@ namespace Automation.TestFramework.Execution
             try
             {
                 await base.AfterTestMethodInvokedAsync();
+
+                if (_testNotificationType != null && Aggregator.HasExceptions)
+                {
+                    TryNotify();
+                }
             }
             finally
             {
                 _testStepContext?.Dispose();
+
+                // clear the test class instance from the test, to avoid being serialized
+                ((ITest)Test).Instance = null;
             }
         }
     }
