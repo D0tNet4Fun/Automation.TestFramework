@@ -1,16 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31613.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.TestFramework.Tests", "Automation.TestFramework.Tests\Automation.TestFramework.Tests.csproj", "{FAE3A0AA-FA12-415E-A660-F48905DEB44D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Automation.TestFramework", "Automation.TestFramework\Automation.TestFramework.csproj", "{28685566-9827-44DA-88C1-A76DFC21871A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{A93C6789-6312-4366-980D-9D92BEBB594D}"
-	ProjectSection(SolutionItems) = preProject
-		Automation.TestFramework.nuspec = Automation.TestFramework.nuspec
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,9 +2,20 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net452</TargetFrameworks>
-    <VersionPrefix>1.1.1</VersionPrefix>
-    <!-- <VersionSuffix>rc4</VersionSuffix> -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Automation.TestFramework</PackageId>
+    <VersionPrefix>1.1.3</VersionPrefix>
+    <VersionSuffix>beta2</VersionSuffix>
+    <Authors>DotNet4Fun</Authors>
+    <Product>Automation.TestFramework</Product>
+    <Title>Automation.TestFramework</Title>
+    <Description>Xunit-based test framework for automating test cases. Supports .NET 4.5.2 or later and .NET Core 2.1.</Description>
+    <Copyright>Copyright © 2021 DotNet4Fun</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>xunit automation</PackageTags>
+    <MinClientVersion>2.12</MinClientVersion>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
