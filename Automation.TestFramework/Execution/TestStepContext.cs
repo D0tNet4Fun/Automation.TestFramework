@@ -5,14 +5,12 @@ namespace Automation.TestFramework.Execution
 {
     internal class TestStepContext : IDisposable
     {
-        private readonly string _source;
         private readonly ExpectedResult _expectedResult;
 
         public TestStep TestStep { get; private set; }
 
-        public TestStepContext(string source, ExpectedResult expectedResult)
+        public TestStepContext(ExpectedResult expectedResult)
         {
-            _source = source;
             _expectedResult = expectedResult;
         }
 
@@ -21,13 +19,13 @@ namespace Automation.TestFramework.Execution
         /// </summary>
         public void Initialize()
         {
-            TestStep = TestStep.InitializeCurrent(_source);
+            TestStep = TestStep.SetCurrent();
             TestStep.ExpectedResult = _expectedResult;
         }
 
         public void Dispose()
         {
-            TestStep.RemoveCurrent(_source);
+            TestStep.ResetCurrent();
             TestStep = null;
         }
     }
