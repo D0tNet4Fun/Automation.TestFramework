@@ -28,14 +28,49 @@ namespace Automation.TestFramework.Execution
 
         protected override Task<RunSummary> RunTestClassesAsync()
         {
-            var attr = TestCollection.CollectionDefinition?.GetCustomAttributes(typeof(CollectionDefinitionAttribute)).SingleOrDefault();
-            var runInParallel = attr?.GetNamedArgument<bool>(nameof(CollectionDefinitionAttribute.DisableParallelization)) == false;
-            if (!runInParallel)
+            // run the test cases in parallel, unless parallelization is disabled by the user
+
+            bool IsParallelizationDisabled()
             {
-                return base.RunTestClassesAsync();
+                // check if the collection definition class has [TestCaseCollectionOptions(ExecutionMode=...)]
+                var testCollectionOptionsAttr = TestCollection.CollectionDefinition?.GetCustomAttributes(typeof(TestCaseCollectionOptionsAttribute)).SingleOrDefault();
+                var testCaseExecutionMode = testCollectionOptionsAttr?.GetNamedArgument<TestCaseExecutionMode>(nameof(TestCaseCollectionOptionsAttribute.ExecutionMode));
+                var isTestCaseExecutionModeSpecified = testCaseExecutionMode != null;
+
+                // check if parallelism is disabled at the assembly level, meaning [assembly: CollectionBehavior(DisableTestParallelization=true)]
+                var collectionBehaviorAttr = TestCollection.TestAssembly.Assembly.GetCustomAttributes(typeof(CollectionBehaviorAttribute)).SingleOrDefault();
+                var disableParallelization = collectionBehaviorAttr?.GetNamedArgument<bool>(nameof(CollectionBehaviorAttribute.DisableTestParallelization));
+                if (disableParallelization == true)
+                {
+                    if (isTestCaseExecutionModeSpecified)
+                    {
+                        // warn user that ExecutionMode will be ignored
+                        _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"Test case collection {TestCollection.DisplayName} defines execution mode {testCaseExecutionMode}, but this will be ignored because parallelization is disabled at the assembly level."));
+                    }
+                    return true;
+                }
+
+                // check if the collection is parallel-disabled, meaning [CollectionDefinition(DisableParallelization=true)]
+                var collectionDefinitionAttr = TestCollection.CollectionDefinition?.GetCustomAttributes(typeof(CollectionDefinitionAttribute)).SingleOrDefault();
+                disableParallelization = collectionDefinitionAttr?.GetNamedArgument<bool>(nameof(CollectionDefinitionAttribute.DisableParallelization));
+                if (disableParallelization == true)
+                {
+                    if (isTestCaseExecutionModeSpecified)
+                    {
+                        // warn user that ExecutionMode will be ignored
+                        _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"Test case collection {TestCollection.DisplayName} defines execution mode {testCaseExecutionMode}, but this will be ignored because parallelization is disabled in the collection definition."));
+                    }
+                    return true;
+                }
+
+                return testCaseExecutionMode switch
+                {
+                    TestCaseExecutionMode.Sequential => true, // user wants to run the collection test cases sequentially
+                    _ => false // no known restrictions
+                };
             }
 
-            return RunTestClassesInParallelAsync();
+            return IsParallelizationDisabled() ? base.RunTestClassesAsync() : RunTestClassesInParallelAsync();
         }
 
         private async Task<RunSummary> RunTestClassesInParallelAsync()
