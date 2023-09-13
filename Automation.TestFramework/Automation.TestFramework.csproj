@@ -16,6 +16,7 @@
     <MinClientVersion>2.12</MinClientVersion>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</RepositoryUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
