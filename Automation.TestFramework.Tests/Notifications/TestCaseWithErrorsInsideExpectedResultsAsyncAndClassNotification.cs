@@ -26,7 +26,7 @@ namespace Automation.TestFramework.Tests.Notifications
         public async Task ExpectedResult()
         {
             await Task.Delay(1);
-            TestStep.GetCurrent().ExpectedResult
+            TestStep.Current.ExpectedResult
                 .Verify("fail 1", async () =>
                 {
                     await Task.Delay(1);

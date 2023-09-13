@@ -72,7 +72,7 @@ Add the following code:
 
 
 ## Supported frameworks
-The test framework supports .NET 4.5.2 or later and .NET Core 2.1.
+The test framework supports .NET 4.5.2 or later and .NET Standard 2.0.
 
 ## Test runner compatibility
 The test framework works with all test runners supported by xUnit.
@@ -131,16 +131,17 @@ Here's what happens when the Summary method is executed:
 Note: The tests may execute on different threads, although not in parallel.
 
 ## Parallelism
-The test framework has the same behavior as xUnit, with one exception: _test cases that are in the same collection run in parallel_, unless specified otherwise. To disable parallelization for a test collection:
+The test framework has the same behavior as xUnit, with one exception: _test cases that are in the same collection run in parallel_, unless specified otherwise. This behavior can be customized using test case collection options. This example shows how to revert to xUnit's behavior:
 
 ```C#
-[CollectionDefinition("Serial", DisableParallelization = true)]
+[CollectionDefinition("Sequential")]
+[TestCaseCollectionOptions(ExecutionMode = TestCaseExecutionMode.Sequential)]
 public class CollectionDefinition : ICollectionFixture<CollectionFixture> { }
 
-[Collection("Serial")]
+[Collection("Sequential")]
 [TestCase] public class TestCase1 {}
 
-[Collection("Serial")]
+[Collection("Sequential")]
 [TestCase] public class TestCase2 {}
 ```
 

@@ -14,8 +14,8 @@ namespace Automation.TestFramework.Execution
         public ExpectedResult ExpectedResult { get; }
 
         public ExpectedResultTestRunner(ITest test, Func<ITest, TestRunner> testRunnerFactory,
-            IMessageBus messageBus, object[] constructorArguments, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, object testClassInstance, string source)
-            : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), skipReason, aggregator, cancellationTokenSource, testNotificationType, source)
+            IMessageBus messageBus, object[] constructorArguments, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, object testClassInstance)
+            : base(test, messageBus, constructorArguments, test.MethodInfo.ToRuntimeMethod(), skipReason, aggregator, cancellationTokenSource, testNotificationType)
         {
             _testNotificationType = testNotificationType;
             _testClassInstance = testClassInstance;
@@ -24,7 +24,7 @@ namespace Automation.TestFramework.Execution
 
         protected override TestStepContext CreateTestStepContext()
         {
-            return new TestStepContext(Source, ExpectedResult);
+            return new TestStepContext(ExpectedResult);
         }
 
         protected override async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
