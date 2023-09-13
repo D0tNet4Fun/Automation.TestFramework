@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="NuGet package properties">
     <PackageId>Automation.TestFramework</PackageId>
     <VersionPrefix>1.2.0</VersionPrefix>
     <VersionSuffix>preview.1</VersionSuffix>
@@ -16,7 +21,6 @@
     <MinClientVersion>2.12</MinClientVersion>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</RepositoryUrl>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

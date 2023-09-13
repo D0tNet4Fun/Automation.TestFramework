@@ -5,6 +5,7 @@ namespace Automation.TestFramework
     /// <summary>
     /// Represents an attribute used to decorate a test method that represents a component of a test case.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
     public abstract class TestCaseComponentAttribute : Attribute
     {
         /// <summary>
