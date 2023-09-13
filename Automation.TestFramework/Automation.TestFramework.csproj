@@ -10,7 +10,7 @@
   <PropertyGroup Label="NuGet package properties">
     <PackageId>Automation.TestFramework</PackageId>
     <VersionPrefix>1.2.0</VersionPrefix>
-    <VersionSuffix>preview.1</VersionSuffix>
+    <VersionSuffix>preview.2</VersionSuffix>
     <Authors>DotNet4Fun</Authors>
     <Product>Automation.TestFramework</Product>
     <Title>Automation.TestFramework</Title>
@@ -21,7 +21,12 @@
     <MinClientVersion>2.12</MinClientVersion>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
