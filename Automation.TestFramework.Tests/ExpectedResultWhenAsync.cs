@@ -11,24 +11,22 @@ namespace Automation.TestFramework.Tests
         public void Summary() { }
 
         [Input]
-        public async Task Input()
+        public void Input()
         {
-            var testStep1 = TestStep.Current;
-            var testStep2 = TestStep.GetCurrent();
-            Assert.Same(testStep1, testStep2);
+            Assert.Same(TestStep.GetCurrent(), TestStep.Current);
         }
 
         [ExpectedResult]
         public async Task ExpectedResult()
         {
             await Task.Delay(1000);
-            TestStep.GetCurrent().ExpectedResult
+            TestStep.Current.ExpectedResult
                 .Assert("This works", () => Assert.True(true));
             await Task.Delay(1000);
-            TestStep.GetCurrent().ExpectedResult
+            TestStep.Current.ExpectedResult
                 .Assert("This works 2", () => Assert.True(true));
             await Task.Delay(1000);
-            TestStep.GetCurrent().ExpectedResult
+            TestStep.Current.ExpectedResult
                 .Assert("This works 3", () => Assert.True(true));
         }
     }

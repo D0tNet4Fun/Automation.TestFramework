@@ -25,7 +25,7 @@ namespace Automation.TestFramework.Tests.Notifications
         [ExpectedResult(1)]
         public void ExpectedResult()
         {
-            TestStep.GetCurrent().ExpectedResult
+            TestStep.Current.ExpectedResult
                 .Verify("fail 1", () => throw Exception1)
                 .Verify("fail 2", () => throw Exception2)
                 ;

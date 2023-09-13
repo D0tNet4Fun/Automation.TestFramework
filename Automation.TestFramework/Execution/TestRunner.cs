@@ -10,15 +10,12 @@ namespace Automation.TestFramework.Execution
 {
     internal class TestRunner : TestRunner<ITestCase>
     {
-        public string Source { get; }
-
         private readonly Type _testNotificationType;
 
-        public TestRunner(ITest test, IMessageBus messageBus, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType, string source)
+        public TestRunner(ITest test, IMessageBus messageBus, object[] constructorArguments, MethodInfo testMethod, string skipReason, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, Type testNotificationType)
             : base(test, messageBus, test.Instance.GetType(), constructorArguments, testMethod, new object[0], skipReason, aggregator, cancellationTokenSource)
         {
             _testNotificationType = testNotificationType;
-            Source = source;
         }
 
         public ExceptionAggregator ExceptionAggregator { get; set; }
@@ -59,7 +56,7 @@ namespace Automation.TestFramework.Execution
 
         protected virtual TestStepContext CreateTestStepContext()
         {
-            return new TestStepContext(Source, null);
+            return new TestStepContext(null);
         }
     }
 }
