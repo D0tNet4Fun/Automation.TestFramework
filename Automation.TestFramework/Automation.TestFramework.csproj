@@ -10,7 +10,7 @@
   <PropertyGroup Label="NuGet package properties">
     <PackageId>Automation.TestFramework</PackageId>
     <VersionPrefix>1.2.0</VersionPrefix>
-    <VersionSuffix>preview.2</VersionSuffix>
+    <!--<VersionSuffix>preview.2</VersionSuffix>-->
     <Authors>DotNet4Fun</Authors>
     <Product>Automation.TestFramework</Product>
     <Title>Automation.TestFramework</Title>
