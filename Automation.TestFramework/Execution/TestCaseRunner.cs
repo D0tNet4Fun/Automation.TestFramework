@@ -45,6 +45,7 @@ namespace Automation.TestFramework.Execution
             try
             {
                 // create the test class instance
+                ResolveConstructorArguments();
                 _test = new Test(TestCase, null, TestCase.Method, DisplayName);
                 var timer = new ExecutionTimer();
                 _testClassInstance = _test.CreateTestClass(TestClass, ConstructorArguments, MessageBus, timer, CancellationTokenSource);
@@ -79,6 +80,17 @@ namespace Automation.TestFramework.Execution
             // run the Summary last
             runSummary.Aggregate(await RunTestCaseSummary(runSummary.Failed > 0));
             return runSummary;
+        }
+
+        private void ResolveConstructorArguments()
+        {
+            for (int i = 0; i < ConstructorArguments.Length; i++)
+            {
+                if (ConstructorArguments[i] is Func<ITestOutputHelper> func)
+                {
+                    ConstructorArguments[i] = func();
+                }
+            }
         }
 
         private async Task<RunSummary> RunTestCaseComponents()
