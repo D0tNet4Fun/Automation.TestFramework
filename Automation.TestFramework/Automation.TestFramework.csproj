@@ -9,13 +9,14 @@
 
   <PropertyGroup Label="NuGet package properties">
     <PackageId>Automation.TestFramework</PackageId>
-    <VersionPrefix>1.2.1</VersionPrefix>
+    <VersionPrefix>1.2.2</VersionPrefix>
     <!--<VersionSuffix>preview.2</VersionSuffix>-->
+    <PackageReleaseNotes>Fixed vulnerabiliy issues found in 1.2.1 by upgrading xUnit dependencies to 2.9.0</PackageReleaseNotes>
     <Authors>DotNet4Fun</Authors>
     <Product>Automation.TestFramework</Product>
     <Title>Automation.TestFramework</Title>
     <Description>Xunit-based test framework for automating test cases. Supports .NET Framework 4.6.1 or later and .NET Standard 2.0.</Description>
-    <Copyright>Copyright © 2023 DotNet4Fun</Copyright>
+    <Copyright>Copyright © 2024 DotNet4Fun</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>xunit automation</PackageTags>
     <MinClientVersion>2.12</MinClientVersion>
