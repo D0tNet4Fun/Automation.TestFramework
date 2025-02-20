@@ -1,9 +1,8 @@
 using System.Reflection;
-using Automation.TestFramework.Dynamic.Entities;
 using Xunit.Sdk;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic.Discovery;
+namespace Automation.TestFramework.Dynamic.Framework;
 
 internal class TestCaseDiscoverer : FactDiscoverer
 {
@@ -15,7 +14,7 @@ internal class TestCaseDiscoverer : FactDiscoverer
         var summaryAttribute = testMethod.Method.GetCustomAttribute<SummaryAttribute>();
         var displayName = GetTestCaseDisplayName(summaryAttribute, testMethod.Method);
 
-        return new TestCase(xunitTestCase, displayName);
+        return new Automation.TestFramework.Dynamic.ObjectModel.TestCase(xunitTestCase, displayName);
     }
 
     private static string GetTestCaseDisplayName(SummaryAttribute summaryAttribute, MethodInfo method)

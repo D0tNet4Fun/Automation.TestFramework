@@ -1,8 +1,9 @@
-using Automation.TestFramework.Dynamic.Discovery;
+using Automation.TestFramework.Dynamic.Framework;
 using Xunit;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic;
+// ReSharper disable once CheckNamespace
+namespace Automation.TestFramework;
 
 /// <summary>
 /// Identifies a method as the summary of a test case. This is the test case entry point, from which the test case steps are run in order. 

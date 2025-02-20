@@ -1,22 +1,35 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.Entities;
+using Xunit.Internal;
+using Xunit.Sdk;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic.Execution;
+namespace Automation.TestFramework.Dynamic.Runners;
 
 internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitTest>
 {
     public static SummaryRunner Instance { get; } = new();
 
     public async ValueTask<RunSummary> Run(
-        TestCaseRunnerContext testCaseCtx,
-        IXunitTest test)
+        IXunitTest test,
+        IMessageBus messageBus,
+        ExplicitOption explicitOption,
+        ExceptionAggregator aggregator,
+        CancellationTokenSource cancellationTokenSource,
+        IReadOnlyCollection<IBeforeAfterTestAttribute> beforeAfterTestAttributes,
+        object?[] constructorArguments)
     {
         await using var context = new SummaryRunnerContext(
             test,
-            testCaseCtx);
+            messageBus,
+            explicitOption,
+            aggregator,
+            cancellationTokenSource,
+            beforeAfterTestAttributes,
+            constructorArguments);
 
         await context.InitializeAsync();
 
@@ -27,18 +40,21 @@ internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitT
 
     protected override async ValueTask<TimeSpan> InvokeTest(SummaryRunnerContext ctxt, object? testClassInstance)
     {
-        // invoke the summary test as usual, in order to collect the dynamic steps on the current test case instance
+        // invoke the summary test as usual, in order to discover the steps and store them on the current test case instance
         var discoveryElapsedTime = await base.InvokeTest(ctxt, testClassInstance);
-
-        // create the tests from steps
-        var tests = ctxt.TestCaseCtx.TestCase.CreateTestsFromSteps();
-        if (tests.Count == 0)
+        var steps = ((TestCase)TestCase.Current).GetSteps();
+        if (steps.Count == 0)
         {
             // todo discovery failed
             return discoveryElapsedTime;
         }
+        
+        // create the dynamic tests from steps
+        var tests = steps
+            .Select((step, index) => step.ToXunitTest(ctxt.Test.TestCase, index + 1, steps.Count))
+            .CastOrToReadOnlyList();
 
-        // execute the dynamic steps and cache their summary
+        // execute the dynamic tests and cache their summary
         var (stepsRunSummary, executionElapsedTime) = await ExecutionTimer.MeasureAsync(() =>
             DynamicTestSetRunner.Instance.Run(tests, ctxt.MessageBus, ctxt.Aggregator, ctxt.CancellationTokenSource));
         ctxt.StepsRunSummary = stepsRunSummary;

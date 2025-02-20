@@ -1,4 +1,5 @@
-namespace Automation.TestFramework.Dynamic;
+// ReSharper disable once CheckNamespace
+namespace Automation.TestFramework;
 
 /// <summary>
 /// Defines the type of a test case step.

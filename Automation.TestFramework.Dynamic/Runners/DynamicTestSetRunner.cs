@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.Entities;
+using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic.Execution;
+namespace Automation.TestFramework.Dynamic.Runners;
 
+/// <summary>
+/// Runner for multiple dynamic tests.
+/// </summary>
 internal class DynamicTestSetRunner
 {
     public static DynamicTestSetRunner Instance { get; } = new();

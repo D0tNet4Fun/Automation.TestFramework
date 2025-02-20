@@ -1,13 +1,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.Entities;
+using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic.Execution;
+namespace Automation.TestFramework.Dynamic.Runners;
 
 /// <summary>
-/// Runner for dynamic tests. 
+/// Runner for dynamic tests.
 /// </summary>
 internal class DynamicTestRunner : XunitTestRunnerBase<DynamicTestRunnerContext, IDynamicTest>
 {

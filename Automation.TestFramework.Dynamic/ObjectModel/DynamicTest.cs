@@ -4,7 +4,7 @@ using System.Linq;
 using Xunit.Sdk;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic.Entities;
+namespace Automation.TestFramework.Dynamic.ObjectModel;
 
 internal class DynamicTest : IDynamicTest
 {

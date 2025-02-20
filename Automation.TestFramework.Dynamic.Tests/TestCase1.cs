@@ -1,14 +1,13 @@
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.Entities;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
 
-public class BasicTest
+public class TestCase1
 {
     private int _value;
 
-    [Summary("Basic test case")]
+    [Summary("Test case 1 (POC)")]
     public void Summary()
     {
         TestCase.Current

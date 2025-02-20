@@ -1,7 +1,7 @@
 using Xunit.Sdk;
 using Xunit.v3;
 
-namespace Automation.TestFramework.Dynamic.Execution;
+namespace Automation.TestFramework.Dynamic;
 
 internal class MessageBusWrapper(IMessageBus messageBus) : IMessageBus
 {
