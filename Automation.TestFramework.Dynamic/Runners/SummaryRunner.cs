@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit.Internal;
 using Xunit.Sdk;
 using Xunit.v3;
 
@@ -42,23 +40,41 @@ internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitT
     {
         // invoke the summary test as usual, in order to discover the steps and store them on the current test case instance
         var discoveryElapsedTime = await base.InvokeTest(ctxt, testClassInstance);
-        var steps = ((TestCase)TestCase.Current).GetSteps();
+        var steps = ((ObjectModel.TestCase)ctxt.Test.TestCase).GetSteps();
         if (steps.Count == 0)
         {
             // todo discovery failed
             return discoveryElapsedTime;
         }
-        
-        // create the dynamic tests from steps
-        var tests = steps
-            .Select((step, index) => step.ToXunitTest(ctxt.Test.TestCase, index + 1, steps.Count))
-            .CastOrToReadOnlyList();
 
-        // execute the dynamic tests and cache their summary
-        var (stepsRunSummary, executionElapsedTime) = await ExecutionTimer.MeasureAsync(() =>
-            DynamicTestSetRunner.Instance.Run(tests, ctxt.MessageBus, ctxt.Aggregator, ctxt.CancellationTokenSource));
-        ctxt.StepsRunSummary = stepsRunSummary;
+        var executionElapsedTime = await InvokeSteps(ctxt, steps);
         
         return discoveryElapsedTime + executionElapsedTime;
+    }
+
+    private async ValueTask<TimeSpan> InvokeSteps(SummaryRunnerContext ctxt, IReadOnlyCollection<ObjectModel.Step> steps)
+    {
+        var executionElapsedTime = await ExecutionTimer.MeasureAsync(async () =>
+        {
+            RunSummary runSummary = new();
+            string? skipReason = null;
+            foreach (var step in steps)
+            {
+                var test = step.ToXunitTest();
+                if (skipReason is not null) test.SkipReason = skipReason;
+
+                var testRunSummary = await StepRunner.Instance.Run(step, test, ctxt.MessageBus, ctxt.Aggregator, ctxt.CancellationTokenSource);
+                runSummary.Aggregate(testRunSummary);
+
+                if (testRunSummary.Failed > 0 && skipReason is null)
+                {
+                    skipReason = "Skipped because of errors in previous steps";
+                }
+            }
+
+            ctxt.StepsRunSummary = runSummary;
+        });
+        
+        return executionElapsedTime;
     }
 }

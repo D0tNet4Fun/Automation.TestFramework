@@ -1,8 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-// ReSharper disable once CheckNamespace
-namespace Automation.TestFramework;
+namespace Automation.TestFramework.Dynamic.ObjectModel;
 
 public interface ITestCase
 {

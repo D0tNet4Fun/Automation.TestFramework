@@ -4,6 +4,6 @@ using Automation.TestFramework.Dynamic.ObjectModel;
 // ReSharper disable once CheckNamespace
 namespace Automation.TestFramework;
 
-public abstract class TestCase : AsyncLocalContainer<ITestCase>
+public abstract class Step : AsyncLocalContainer<IStep>
 {
 }

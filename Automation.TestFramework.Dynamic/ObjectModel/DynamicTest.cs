@@ -22,6 +22,7 @@ internal class DynamicTest : IDynamicTest
         {
             throw new ArgumentException("The delegate must have a method without any parameters");
         }
+
         // if (@delegate.Target?.GetType() != testCase.TestClass.Class)
         // {
         //     throw new ArgumentException("The delegate target type must match the test class type");
