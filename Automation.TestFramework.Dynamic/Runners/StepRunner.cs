@@ -46,14 +46,18 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
         foreach (var subStep in subSteps)
         {
             var dynamicTest = subStep.ToXunitTest();
-            if (runnerContext.HasErrors)
+            // skip this test if there are critical errors from running previous sub-steps
+            if (runnerContext.HasCriticalErrors)
             {
                 dynamicTest.SkipReason = "Skipped because errors occurred in previous sub-steps.";
             }
 
             var subStepRunSummary = await DynamicTestRunner.Instance.Run(dynamicTest, runnerContext.MessageBus, runnerContext.Aggregator, runnerContext.CancellationTokenSource);
             subStepsRunSummary.Aggregate(subStepRunSummary);
-            runnerContext.HasErrors = subStepsRunSummary.Failed > 0;
+
+            // acknowledge there are critical errors while running the current step, if this sub-step failed, and it's not a verification
+            // this will cause all future sub-steps to be skipped
+            runnerContext.HasCriticalErrors = subStepsRunSummary.Failed > 0 && subStep.Type != SubStepType.Verification;
         }
 
         runnerContext.SubStepsRunSummary = subStepsRunSummary;

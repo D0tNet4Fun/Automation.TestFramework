@@ -21,5 +21,5 @@ internal class StepRunnerContext(
 
     public RunSummary? SubStepsRunSummary { get; set; }
     
-    public bool HasErrors { get; set; }
+    public bool HasCriticalErrors { get; set; }
 }
