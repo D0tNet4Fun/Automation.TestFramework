@@ -23,4 +23,20 @@ public interface IExpectedResultDescriptor : IStepDescriptor
     /// <param name="code">The code.</param>
     /// <returns>The same step descriptor instance used to make this call.</returns>
     public IExpectedResultDescriptor AssertAsync(string description, Func<Task> code);
+
+    /// <summary>
+    /// Executes code as a <see cref="SubStepType.Verification"/> within the current step.
+    /// </summary>
+    /// <param name="description">The description of the code to be executed.</param>
+    /// <param name="code">The code.</param>
+    /// <returns>The same step descriptor instance used to make this call.</returns>
+    public IExpectedResultDescriptor Verify(string description, Action code);
+    
+    /// <summary>
+    /// Executes async code as a <see cref="SubStepType.Verification"/> within the current step.
+    /// </summary>
+    /// <param name="description">The description of the code to be executed.</param>
+    /// <param name="code">The code.</param>
+    /// <returns>The same step descriptor instance used to make this call.</returns>
+    public IExpectedResultDescriptor VerifyAsync(string description, Func<Task> code);
 }
