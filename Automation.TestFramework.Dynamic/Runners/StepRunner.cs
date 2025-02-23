@@ -10,7 +10,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
 {
     public static StepRunner Instance { get; } = new();
 
-    public async Task<RunSummary> Run(
+    public async ValueTask<RunSummary> Run(
         ObjectModel.Step step,
         IDynamicTest test, 
         IMessageBus messageBus, 
@@ -34,6 +34,29 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
         }
 
         return runSummary;
+    }
+
+    public async ValueTask RunCurrentStepSubSteps()
+    {
+        var step = ObjectModel.Step.Current;
+        var runnerContext = step.RunnerContext ?? throw new InvalidOperationException("The current step does not have a runner context.");
+        var subStepsRunSummary = runnerContext.SubStepsRunSummary ?? new RunSummary();
+
+        var subSteps = step.GetSubSteps();
+        foreach (var subStep in subSteps)
+        {
+            var dynamicTest = subStep.ToXunitTest();
+            if (runnerContext.HasErrors)
+            {
+                dynamicTest.SkipReason = "Skipped because errors occurred in previous sub-steps.";
+            }
+
+            var subStepRunSummary = await DynamicTestRunner.Instance.Run(dynamicTest, runnerContext.MessageBus, runnerContext.Aggregator, runnerContext.CancellationTokenSource);
+            subStepsRunSummary.Aggregate(subStepRunSummary);
+            runnerContext.HasErrors = subStepsRunSummary.Failed > 0;
+        }
+
+        runnerContext.SubStepsRunSummary = subStepsRunSummary;
     }
 
     protected override void PreInvoke(StepRunnerContext ctxt)

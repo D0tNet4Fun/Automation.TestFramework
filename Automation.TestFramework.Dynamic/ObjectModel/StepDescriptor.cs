@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Automation.TestFramework.Dynamic.Runners;
 using Xunit.v3;
@@ -8,9 +9,21 @@ namespace Automation.TestFramework.Dynamic.ObjectModel;
 
 internal class StepDescriptor : IStepDescriptor
 {
-    private readonly Queue<SubStep> _subSteps = [];
+    private readonly List<SubStep> _subSteps = [];
 
     public int SubStepCount { get; private set; }
+    
+    public IReadOnlyCollection<SubStep> GetSubSteps()
+    {
+        try
+        {
+            return _subSteps.ToArray();
+        }
+        finally
+        {
+            _subSteps.Clear();
+        }
+    }
 
     public IStepDescriptor ExecuteSubStep(SubStepType type, string description, Action code)
     {
@@ -32,7 +45,7 @@ internal class StepDescriptor : IStepDescriptor
     {
         var order = SubStepCount + 1;
         var subStep = new SubStep(type, order, description, code);
-        _subSteps.Enqueue(subStep);
+        _subSteps.Add(subStep);
         SubStepCount++;
 
         return this;
@@ -40,20 +53,7 @@ internal class StepDescriptor : IStepDescriptor
 
     private void Execute()
     {
-        var runnerContext = Step.Current.RunnerContext ?? throw new InvalidOperationException("The current step does not have a runner context.");
-        var subStepsRunSummary = runnerContext.SubStepsRunSummary ?? new RunSummary();
-
-        while (_subSteps.Count > 0)
-        {
-            var subStep = _subSteps.Dequeue();
-            var dynamicTest = subStep.ToXunitTest();
-
-            var task = DynamicTestRunner.Instance.Run(dynamicTest, runnerContext.MessageBus, runnerContext.Aggregator, runnerContext.CancellationTokenSource);
-            var subStepRunSummary = task.GetAwaiter().GetResult();
-            
-            subStepsRunSummary.Aggregate(subStepRunSummary);
-        }
-
-        runnerContext.SubStepsRunSummary = subStepsRunSummary;
+        var task = StepRunner.Instance.RunCurrentStepSubSteps();
+        task.GetAwaiter().GetResult();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Automation.TestFramework.Dynamic.Runners;
 using Xunit.Internal;
 
@@ -50,6 +51,11 @@ internal class Step(StepType type, int index, int order, string description, Del
             throw new InvalidOperationException($"{Type} step descriptor mismatch. Expected: {typeof(TStepDescriptor).Name}, actual: {descriptor.GetType().Name}.");
 
         return specificDescriptor;
+    }
+
+    public IReadOnlyCollection<SubStep> GetSubSteps()
+    {
+        return ((StepDescriptor)descriptor).GetSubSteps();
     }
     
     public StepRunnerContext? RunnerContext { get; set; }
