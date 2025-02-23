@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading;
-using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit.Sdk;
 using Xunit.v3;
 using ITestCase = Automation.TestFramework.Dynamic.ObjectModel.ITestCase;

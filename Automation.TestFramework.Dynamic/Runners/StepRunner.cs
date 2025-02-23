@@ -80,7 +80,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
             var hasErrors = runSummary.Failed > 0 || runSummary.Skipped > 0 || runSummary.NotRun > 0;
             if (hasErrors)
             {
-                throw new StepExecutionException("One or more errors occurred while running this step.");
+                throw new StepFailedException("One or more errors occurred while running this step.");
             }
         }
 

@@ -64,7 +64,7 @@ internal class TestCaseDescriptorRunner : XunitTestRunnerBase<TestCaseDescriptor
             foreach (var step in steps)
             {
                 var test = step.ToXunitTest();
-                if (skipReason is not null) test.SkipReason = skipReason;
+                if (skipReason is not null && step.Type != StepType.Cleanup) test.SkipReason = skipReason;
 
                 var testRunSummary = await StepRunner.Instance.Run(step, test, ctxt.MessageBus, ctxt.Aggregator, ctxt.CancellationTokenSource);
                 runSummary.Aggregate(testRunSummary);
@@ -73,6 +73,11 @@ internal class TestCaseDescriptorRunner : XunitTestRunnerBase<TestCaseDescriptor
                 {
                     skipReason = "Skipped because of errors in previous steps";
                 }
+            }
+
+            if (runSummary.Failed > 0 || runSummary.Skipped > 0 || runSummary.NotRun > 0)
+            {
+                throw new TestCaseFailedException("One or more errors occurred while running this test case.");
             }
 
             ctxt.StepsRunSummary = runSummary;

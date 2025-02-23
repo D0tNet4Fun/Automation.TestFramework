@@ -33,7 +33,7 @@ internal class TestCase(XunitTestCase xtc, string displayName)
 
     public async ValueTask<RunSummary> Run(ExplicitOption explicitOption, IMessageBus messageBus, object?[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
     {
-        messageBus = new MessageBusWrapper(messageBus); // for debugging
+        //messageBus = new MessageBusWrapper(messageBus); // for debugging
 
         var tests = await aggregator.RunAsync(CreateTests, []);
 
