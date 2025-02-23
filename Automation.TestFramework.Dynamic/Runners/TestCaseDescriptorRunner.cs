@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit.Sdk;
 using Xunit.v3;
 using ITestCase = Automation.TestFramework.Dynamic.ObjectModel.ITestCase;
@@ -60,14 +59,10 @@ internal class TestCaseDescriptorRunner : XunitTestRunnerBase<TestCaseDescriptor
     {
         var executionElapsedTime = await ExecutionTimer.MeasureAsync(async () =>
         {
-            RuntimeDependencies runtimeDependencies = new(ctxt.MessageBus, ctxt.Aggregator, ctxt.CancellationTokenSource);
-            
             RunSummary runSummary = new();
             string? skipReason = null;
             foreach (var step in steps)
             {
-                step.RuntimeDependencies = runtimeDependencies;
-                
                 var test = step.ToXunitTest();
                 if (skipReason is not null) test.SkipReason = skipReason;
 

@@ -18,4 +18,6 @@ internal class StepRunnerContext(
     )
 {
     public ObjectModel.Step Step { get; } = step;
+
+    public RunSummary? SubStepsRunSummary { get; set; }
 }

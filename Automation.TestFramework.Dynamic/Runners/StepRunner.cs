@@ -25,11 +25,19 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
 
         await context.InitializeAsync();
 
-        return await Run(context);
+        var runSummary = await Run(context);
+
+        if (context.SubStepsRunSummary is not null)
+        {
+            runSummary.Aggregate(context.SubStepsRunSummary.Value);
+        }
+
+        return runSummary;
     }
 
     protected override void PreInvoke(StepRunnerContext ctxt)
     {
+        ctxt.Step.RunnerContext = ctxt;
         ctxt.Step.PreInvoke();
         base.PreInvoke(ctxt);
     }
@@ -43,6 +51,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
         finally
         {
             ctxt.Step.PostInvoke();
+            ctxt.Step.RunnerContext = null;
         }
     }
 }

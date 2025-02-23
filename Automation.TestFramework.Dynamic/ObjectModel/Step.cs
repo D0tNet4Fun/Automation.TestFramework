@@ -1,4 +1,5 @@
 using System;
+using Automation.TestFramework.Dynamic.Runners;
 using Xunit.Internal;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
@@ -14,7 +15,6 @@ internal class Step(StepType type, int index, int order, string description, Del
     public string Description { get; } = Guard.ArgumentNotNull(description, nameof(description));
     public Delegate Code { get; } = Guard.ArgumentNotNull(code, nameof(code));
     public int? Timeout { get; set; }
-    public RuntimeDependencies? RuntimeDependencies { get; set; }
 
     public IDynamicTest ToXunitTest()
     {
@@ -51,4 +51,6 @@ internal class Step(StepType type, int index, int order, string description, Del
 
         return specificDescriptor;
     }
+    
+    public StepRunnerContext? RunnerContext { get; set; }
 }
