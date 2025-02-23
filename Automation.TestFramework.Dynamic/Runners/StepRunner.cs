@@ -12,9 +12,9 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
 
     public async ValueTask<RunSummary> Run(
         ObjectModel.Step step,
-        IDynamicTest test, 
-        IMessageBus messageBus, 
-        ExceptionAggregator aggregator, 
+        IDynamicTest test,
+        IMessageBus messageBus,
+        ExceptionAggregator aggregator,
         CancellationTokenSource cancellationTokenSource)
     {
         await using var context = new StepRunnerContext(
@@ -80,7 +80,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
             var hasErrors = runSummary.Failed > 0 || runSummary.Skipped > 0 || runSummary.NotRun > 0;
             if (hasErrors)
             {
-                throw new StepFailedException("One or more errors occurred while running this step.");
+                ctxt.Aggregator.Add(new StepFailedException("One or more errors occurred while running this step."));
             }
         }
 

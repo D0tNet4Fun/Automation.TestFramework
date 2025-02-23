@@ -77,10 +77,12 @@ internal class TestCaseDescriptorRunner : XunitTestRunnerBase<TestCaseDescriptor
 
             if (runSummary.Failed > 0 || runSummary.Skipped > 0 || runSummary.NotRun > 0)
             {
-                throw new TestCaseFailedException("One or more errors occurred while running this test case.");
+                ctxt.Aggregator.Add(new TestCaseFailedException("One or more errors occurred while running this test case."));
             }
-
-            ctxt.StepsRunSummary = runSummary;
+            else
+            {
+                ctxt.StepsRunSummary = runSummary;
+            }
         });
         
         return executionElapsedTime;
