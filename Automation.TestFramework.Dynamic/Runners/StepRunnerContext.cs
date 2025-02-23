@@ -8,6 +8,7 @@ namespace Automation.TestFramework.Dynamic.Runners;
 internal class StepRunnerContext(
     ObjectModel.Step step,
     IDynamicTest test,
+    object? testClassInstance,
     IMessageBus messageBus,
     ExceptionAggregator aggregator,
     CancellationTokenSource cancellationTokenSource)
@@ -19,7 +20,9 @@ internal class StepRunnerContext(
 {
     public ObjectModel.Step Step { get; } = step;
 
+    public object? TestClassInstance { get; } = testClassInstance;
+
     public RunSummary? SubStepsRunSummary { get; set; }
-    
+
     public bool HasCriticalErrors { get; set; }
 }

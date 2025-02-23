@@ -1,7 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Automation.TestFramework.Dynamic.Framework;
 using Automation.TestFramework.Dynamic.ObjectModel;
+using Xunit;
 using Xunit.v3;
 
 namespace Automation.TestFramework.Dynamic.Runners;
@@ -13,6 +15,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
     public async ValueTask<RunSummary> Run(
         ObjectModel.Step step,
         IDynamicTest test,
+        object? testClassInstance,
         IMessageBus messageBus,
         ExceptionAggregator aggregator,
         CancellationTokenSource cancellationTokenSource)
@@ -20,6 +23,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
         await using var context = new StepRunnerContext(
             step,
             test,
+            testClassInstance,
             messageBus,
             aggregator,
             cancellationTokenSource);
@@ -72,7 +76,12 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
 
     protected override async ValueTask<TimeSpan> InvokeTest(StepRunnerContext ctxt, object? testClassInstance)
     {
-        var elapsed =  await base.InvokeTest(ctxt, testClassInstance);
+        var elapsed = await base.InvokeTest(ctxt, testClassInstance);
+
+        if (ctxt.Aggregator.HasExceptions)
+        {
+            TryRaiseErrorEvent(ctxt.TestClassInstance, ctxt.Aggregator.ToException()!);
+        }
 
         if (ctxt.SubStepsRunSummary is not null)
         {
@@ -85,6 +94,19 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
         }
 
         return elapsed;
+    }
+
+    private static void TryRaiseErrorEvent(object? testClassInstance, Exception exception)
+    {
+        try
+        {
+            EventSource.Instance.OnStepError(testClassInstance, exception);
+        }
+        catch (Exception e)
+        {
+            // exception thrown by the error handler
+            TestContext.Current.AddWarning($"Error in custom event handler: {e.Message}");
+        }
     }
 
     protected override void PostInvoke(StepRunnerContext ctxt)

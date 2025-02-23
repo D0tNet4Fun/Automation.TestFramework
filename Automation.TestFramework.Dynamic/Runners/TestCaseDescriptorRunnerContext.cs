@@ -18,5 +18,7 @@ internal class TestCaseDescriptorRunnerContext(
     : XunitTestRunnerContext(test, messageBus, explicitOption, aggregator, cancellationTokenSource, beforeAfterTestAttributes, constructorArguments)
 {
     public ITestCase TestCase { get; } = testCase;
+
+    public object? TestClassInstance { get; set; }
     public RunSummary? StepsRunSummary { get; set; }
 }
