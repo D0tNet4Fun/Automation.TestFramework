@@ -3,16 +3,16 @@ using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
 
-public class TestCase1
+public class BasicTestCase
 {
     private int _value;
 
-    [Summary("Test case 1 (POC)")]
+    [Summary("Basic test case with input and expected result")]
     public void Summary()
     {
-        TestCase.Current
-            .AddStep(StepType.Input, "Input", Input)
-            .AddAsyncStep(StepType.ExpectedResult, "Expected result", ExpectedResult);
+        TestCase.Current.Descriptor
+            .AddStep(StepType.Input, "This is the input", Input)
+            .AddAsyncStep(StepType.ExpectedResult, "This is the expected result", ExpectedResult);
     }
 
     private void Input()

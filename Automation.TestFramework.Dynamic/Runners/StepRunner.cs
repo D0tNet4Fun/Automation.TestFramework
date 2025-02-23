@@ -10,7 +10,7 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
     public static StepRunner Instance { get; } = new();
 
     public async Task<RunSummary> Run(
-        ObjectModel.Step step, 
+        ObjectModel.Step step,
         IDynamicTest test, 
         IMessageBus messageBus, 
         ExceptionAggregator aggregator, 

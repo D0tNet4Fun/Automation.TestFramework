@@ -2,17 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit.Sdk;
 using Xunit.v3;
+using ITestCase = Automation.TestFramework.Dynamic.ObjectModel.ITestCase;
 
 namespace Automation.TestFramework.Dynamic.Runners;
 
-internal class TestCaseRunner : XunitTestCaseRunner
+internal class TestCaseRunner : XunitTestCaseRunnerBase<TestCaseRunnerContext, ITestCase, IXunitTest>
 {
-    public new static TestCaseRunner Instance { get; } = new();
+    public static TestCaseRunner Instance { get; } = new();
 
     public async Task<RunSummary> Run(
-        IXunitTestCase testCase,
+        ITestCase testCase,
         IReadOnlyCollection<IXunitTest> tests,
         ExplicitOption explicitOption,
         IMessageBus messageBus,
@@ -25,15 +27,13 @@ internal class TestCaseRunner : XunitTestCaseRunner
             throw new ArgumentException("The test case should have a single test, the one known as the summary.");
         }
 
-        await using var context = new XunitTestCaseRunnerContext(
+        await using var context = new TestCaseRunnerContext(
             testCase,
             tests,
             messageBus,
+            explicitOption,
             aggregator,
             cancellationTokenSource,
-            testCase.TestCaseDisplayName,
-            testCase.SkipReason,
-            explicitOption,
             constructorArguments);
 
         await context.InitializeAsync();
@@ -41,10 +41,11 @@ internal class TestCaseRunner : XunitTestCaseRunner
         return await Run(context);
     }
 
-    protected override ValueTask<RunSummary> RunTest(XunitTestCaseRunnerContext ctxt, IXunitTest test)
+    protected override ValueTask<RunSummary> RunTest(TestCaseRunnerContext ctxt, IXunitTest test)
     {
-        return SummaryRunner.Instance.Run(
+        return TestCaseDescriptorRunner.Instance.Run(
             test,
+            ctxt.TestCase,
             ctxt.MessageBus, 
             ctxt.ExplicitOption, 
             ctxt.Aggregator, 

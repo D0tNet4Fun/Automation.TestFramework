@@ -14,7 +14,7 @@ internal class TestCaseDiscoverer : FactDiscoverer
         var summaryAttribute = testMethod.Method.GetCustomAttribute<SummaryAttribute>();
         var displayName = GetTestCaseDisplayName(summaryAttribute, testMethod.Method);
 
-        return new Automation.TestFramework.Dynamic.ObjectModel.TestCase(xunitTestCase, displayName);
+        return new ObjectModel.TestCase(xunitTestCase, displayName);
     }
 
     private static string GetTestCaseDisplayName(SummaryAttribute summaryAttribute, MethodInfo method)

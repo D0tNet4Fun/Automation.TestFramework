@@ -1,9 +1,9 @@
 using Automation.TestFramework.Dynamic;
-using Automation.TestFramework.Dynamic.ObjectModel;
 
 // ReSharper disable once CheckNamespace
 namespace Automation.TestFramework;
 
-public abstract class TestCase : AsyncLocalContainer<ITestCase>
-{
-}
+/// <summary>
+/// Provides access to the current test case.
+/// </summary>
+public abstract class TestCase : AsyncLocalContainer<IDynamicTestCase>;

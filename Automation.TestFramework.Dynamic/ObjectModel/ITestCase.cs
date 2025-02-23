@@ -1,13 +1,12 @@
-using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using Xunit.v3;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
-public interface ITestCase
+internal interface ITestCase : IXunitTestCase
 {
-    ITestCase AddStep(StepType stepType, string description, Action action);
-    
-    ITestCase AddAsyncStep(StepType stepType, string description, Func<Task> action);
-    
-    //void Run();
+    public int StepCount { get; }
+
+    public IReadOnlyCollection<Step> GetSteps();
+    public string GetNextDynamicTestUniqueId();
 }

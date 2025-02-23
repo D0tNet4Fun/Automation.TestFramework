@@ -8,7 +8,7 @@ namespace Automation.TestFramework.Dynamic.Runners;
 /// <summary>
 /// The base test runner for dynamic tests (with overridable context).
 /// </summary>
-public class DynamicTestRunnerBase<TContext> : XunitTestRunnerBase<TContext, IDynamicTest> 
+internal class DynamicTestRunnerBase<TContext> : XunitTestRunnerBase<TContext, IDynamicTest> 
     where TContext : XunitTestRunnerBaseContext<IDynamicTest>
 {
     protected override bool IsTestClassCreatable(TContext ctxt)

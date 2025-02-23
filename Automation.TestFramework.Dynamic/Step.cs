@@ -1,9 +1,9 @@
 using Automation.TestFramework.Dynamic;
-using Automation.TestFramework.Dynamic.ObjectModel;
 
 // ReSharper disable once CheckNamespace
 namespace Automation.TestFramework;
 
-public abstract class Step : AsyncLocalContainer<IStep>
-{
-}
+/// <summary>
+/// Provides access to the current step.
+/// </summary>
+public abstract class Step : AsyncLocalContainer<IDynamicStep>;

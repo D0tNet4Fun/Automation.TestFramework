@@ -5,7 +5,7 @@ namespace Automation.TestFramework.Dynamic.ObjectModel;
 /// <summary>
 /// Represents a test based on a delegate.
 /// </summary>
-public interface IDynamicTest : IXunitTest
+internal interface IDynamicTest : IXunitTest
 {
     /// <summary>
     /// The delegate target.

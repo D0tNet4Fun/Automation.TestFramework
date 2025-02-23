@@ -1,34 +1,20 @@
 using System;
-using System.Collections.Generic;
-using Automation.TestFramework.Dynamic.Runners;
-using Xunit.Sdk;
+using Xunit.Internal;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
-internal class Step : IStep
+internal class Step(StepType type, int index, int order, string description, Delegate code, IStepDescriptor descriptor)
+    : IDynamicStep
 {
-    private readonly Queue<SubStep> _subSteps = [];
+    public static Step Current => (Step)TestFramework.Step.Current;
 
-    public Step(StepType type, int index, int order, string description, Delegate code)
-    {
-        if (string.IsNullOrEmpty(description)) throw new ArgumentNullException(nameof(description));
-
-        Type = type;
-        Index = index;
-        Order = order;
-        Description = description;
-        Code = code;
-    }
-
-    public static Step Current => (Step)Automation.TestFramework.Step.Current;
-
-    public StepType Type { get; }
-    public int Index { get; set; }
-    public int Order { get; }
-    public string Description { get; }
-    public Delegate Code { get; }
+    public StepType Type { get; } = type;
+    public int Index { get; } = index;
+    public int Order { get; } = order;
+    public string Description { get; } = Guard.ArgumentNotNull(description, nameof(description));
+    public Delegate Code { get; } = Guard.ArgumentNotNull(code, nameof(code));
     public int? Timeout { get; set; }
-    public int SubStepCount => _subSteps.Count;
+    public RuntimeDependencies? RuntimeDependencies { get; set; }
 
     public IDynamicTest ToXunitTest()
     {
@@ -38,7 +24,7 @@ internal class Step : IStep
         return new DynamicTest(
             testCase,
             displayName,
-            uniqueID: UniqueIDGenerator.ForTest(testCase.UniqueID, testCase.GetNextTestIndex()),
+            uniqueId: testCase.GetNextDynamicTestUniqueId(),
             Timeout,
             Code);
 
@@ -52,40 +38,17 @@ internal class Step : IStep
         }
     }
 
-    public IStep ExecuteSubStep(SubStepType type, string description, Action action)
+    public void PreInvoke() => TestFramework.Step.SetCurrent(this);
+
+    public void PostInvoke() => TestFramework.Step.ResetCurrent();
+    
+    public IStepDescriptor Descriptor => descriptor;
+
+    public TStepDescriptor GetDescriptor<TStepDescriptor>() where TStepDescriptor : IStepDescriptor
     {
-        AddSubStep(type, description, action);
-        Execute();
+        if (descriptor is not TStepDescriptor specificDescriptor)
+            throw new InvalidOperationException($"{Type} step descriptor mismatch. Expected: {typeof(TStepDescriptor).Name}, actual: {descriptor.GetType().Name}.");
 
-        return this;
-    }
-
-    private Step AddSubStep(SubStepType type, string description, Delegate code)
-    {
-        var subStepIndex = _subSteps.Count + 1;
-        var subStep = new SubStep(type, subStepIndex , description, code);
-        _subSteps.Enqueue(subStep);
-
-        return this;
-    }
-
-    private void Execute()
-    {
-        var subStep = _subSteps.Dequeue();
-        var (messageBus, aggregator, cancellationTokenSource) = TestCase.Current.RuntimeDependencies!;
-
-        var dynamicTest = subStep.ToXunitTest();
-        var task = StepRunner.Instance.Run(this, dynamicTest, messageBus, aggregator, cancellationTokenSource);
-        task.GetAwaiter().GetResult();
-    }
-
-    public void PreInvoke()
-    {
-        TestFramework.Step.SetCurrent(this);
-    }
-
-    public void PostInvoke()
-    {
-        TestFramework.Step.ResetCurrent();
+        return specificDescriptor;
     }
 }

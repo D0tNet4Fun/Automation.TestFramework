@@ -12,9 +12,9 @@ internal class DynamicTest : IDynamicTest
     private static readonly object?[] NoTestMethodArguments = [];
     
     public DynamicTest(
-        IXunitTestCase testCase,
+        ITestCase testCase,
         string displayName,
-        string uniqueID,
+        string uniqueId,
         int? timeout,
         Delegate @delegate)
     {
@@ -22,14 +22,13 @@ internal class DynamicTest : IDynamicTest
         {
             throw new ArgumentException("The delegate must have a method without any parameters");
         }
-
         // if (@delegate.Target?.GetType() != testCase.TestClass.Class)
         // {
         //     throw new ArgumentException("The delegate target type must match the test class type");
         // }
 
         TestDisplayName = displayName;
-        UniqueID = uniqueID;
+        UniqueID = uniqueId;
         TestCase = testCase;
         TestMethod = new XunitTestMethod(testCase.TestClass, @delegate.Method, NoTestMethodArguments);
         Timeout = timeout ?? 0;

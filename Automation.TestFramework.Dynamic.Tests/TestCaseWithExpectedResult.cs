@@ -4,19 +4,14 @@ using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
 
-interface IMyCustomStep : IStep
-{
-    
-}
-
-public class TestCase2
+public class TestCaseWithExpectedResult
 {
     private int _value;
 
-    [Summary("Test case 2 (Expected result POC)")]
+    [Summary("Test case with expected result with one assertion")]
     public void Summary()
     {
-        TestCase.Current
+        TestCase.Current.Descriptor
             .AddStep(StepType.Input, "Input", Input)
             .AddAsyncStep(StepType.ExpectedResult, "Expected result", ExpectedResult);
     }
@@ -32,7 +27,7 @@ public class TestCase2
 
         _value = 2;
         await Task.Delay(100);
-        Step.GetCurrentAs<IExpectedResult>()
+        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
             .Assert("This should work", () =>
             {
                 Assert.Equal(2, _value);

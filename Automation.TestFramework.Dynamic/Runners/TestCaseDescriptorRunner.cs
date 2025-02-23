@@ -2,17 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit.Sdk;
 using Xunit.v3;
+using ITestCase = Automation.TestFramework.Dynamic.ObjectModel.ITestCase;
 
 namespace Automation.TestFramework.Dynamic.Runners;
 
-internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitTest>
+internal class TestCaseDescriptorRunner : XunitTestRunnerBase<TestCaseDescriptorRunnerContext, IXunitTest>
 {
-    public static SummaryRunner Instance { get; } = new();
+    public static TestCaseDescriptorRunner Instance { get; } = new();
 
     public async ValueTask<RunSummary> Run(
         IXunitTest test,
+        ITestCase testCase,
         IMessageBus messageBus,
         ExplicitOption explicitOption,
         ExceptionAggregator aggregator,
@@ -20,8 +23,9 @@ internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitT
         IReadOnlyCollection<IBeforeAfterTestAttribute> beforeAfterTestAttributes,
         object?[] constructorArguments)
     {
-        await using var context = new SummaryRunnerContext(
+        await using var context = new TestCaseDescriptorRunnerContext(
             test,
+            testCase,
             messageBus,
             explicitOption,
             aggregator,
@@ -36,11 +40,11 @@ internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitT
         return context.StepsRunSummary ?? discoveryRunSummary;
     }
 
-    protected override async ValueTask<TimeSpan> InvokeTest(SummaryRunnerContext ctxt, object? testClassInstance)
+    protected override async ValueTask<TimeSpan> InvokeTest(TestCaseDescriptorRunnerContext ctxt, object? testClassInstance)
     {
         // invoke the summary test as usual, in order to discover the steps and store them on the current test case instance
         var discoveryElapsedTime = await base.InvokeTest(ctxt, testClassInstance);
-        var steps = ((ObjectModel.TestCase)ctxt.Test.TestCase).GetSteps();
+        var steps = ctxt.TestCase.GetSteps();
         if (steps.Count == 0)
         {
             // todo discovery failed
@@ -52,14 +56,18 @@ internal class SummaryRunner : XunitTestRunnerBase<SummaryRunnerContext, IXunitT
         return discoveryElapsedTime + executionElapsedTime;
     }
 
-    private async ValueTask<TimeSpan> InvokeSteps(SummaryRunnerContext ctxt, IReadOnlyCollection<ObjectModel.Step> steps)
+    private async ValueTask<TimeSpan> InvokeSteps(TestCaseDescriptorRunnerContext ctxt, IReadOnlyCollection<ObjectModel.Step> steps)
     {
         var executionElapsedTime = await ExecutionTimer.MeasureAsync(async () =>
         {
+            RuntimeDependencies runtimeDependencies = new(ctxt.MessageBus, ctxt.Aggregator, ctxt.CancellationTokenSource);
+            
             RunSummary runSummary = new();
             string? skipReason = null;
             foreach (var step in steps)
             {
+                step.RuntimeDependencies = runtimeDependencies;
+                
                 var test = step.ToXunitTest();
                 if (skipReason is not null) test.SkipReason = skipReason;
 
