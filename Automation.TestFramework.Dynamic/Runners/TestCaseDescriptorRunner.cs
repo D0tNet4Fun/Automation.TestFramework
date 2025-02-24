@@ -48,7 +48,8 @@ internal class TestCaseDescriptorRunner : XunitTestRunnerBase<TestCaseDescriptor
         var steps = ctxt.TestCase.GetSteps();
         if (steps.Count == 0)
         {
-            // todo discovery failed
+            const string skipReason = "This test case does not contain any steps.";
+            await OnTestSkipped(ctxt, skipReason, discoveryElapsedTime.Seconds, string.Empty, null);
             return discoveryElapsedTime;
         }
 
