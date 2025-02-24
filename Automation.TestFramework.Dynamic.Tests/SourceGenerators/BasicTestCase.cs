@@ -16,6 +16,7 @@ public partial class BasicTestCase
         _value = 1;
     }
 
+    [ExpectedResult]
     private async Task ExpectedResult()
     {
         await Task.Delay(100);
