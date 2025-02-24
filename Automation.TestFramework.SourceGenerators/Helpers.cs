@@ -12,7 +12,7 @@ public static class Helpers
         return Enum.GetNames(typeof(StepType)).Any(stepTypeName => stepTypeName == name);
     }
 
-    public static StepAttribute? ToStepAttribute(this AttributeSyntax attribute)
+    public static StepAttribute ToStepAttribute(this AttributeSyntax attribute)
     {
         var arguments = attribute.ArgumentList?.Arguments;
         return new StepAttribute(GetType(), GetOrder(), GetDescription());
