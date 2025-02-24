@@ -50,6 +50,12 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
     {
         var elapsed = await base.InvokeTest(ctxt, testClassInstance);
 
+        if (ctxt.Step.HasPendingSubSteps)
+        {
+            elapsed += ExecutionTimer.Measure(() =>
+                ctxt.Aggregator.Run(() => ctxt.Step.Descriptor.Execute()));
+        }
+
         if (ctxt.Aggregator.HasExceptions)
         {
             TryRaiseErrorEvent(ctxt.TestClassInstance, ctxt.Aggregator.ToException()!);

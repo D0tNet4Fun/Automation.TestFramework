@@ -66,6 +66,8 @@ internal class Step : IDynamicStep
 
     public StepRunnerContext? RunnerContext { get; set; }
 
+    public bool HasPendingSubSteps => _descriptor.HasPendingSubSteps;
+
     public void Execute(IReadOnlyCollection<SubStep> subSteps)
     {
         var task = SubStepRunner.Instance.Run(

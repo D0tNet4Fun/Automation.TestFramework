@@ -9,25 +9,38 @@ namespace Automation.TestFramework.Dynamic.ObjectModel;
 public interface IStepDescriptor
 {
     /// <summary>
+    /// Adds code as a sub-step within the current step.
+    /// </summary>
+    /// <param name="description">The description of the code to be executed as a sub-step.</param>
+    /// <param name="code">The code.</param>
+    /// <returns>The same step descriptor instance used to make this call.</returns>
+    IStepDescriptor AddSubStep(string description, Action code);
+
+    /// <summary>
+    /// Adds async code as a sub-step within the current step.
+    /// </summary>
+    /// <param name="description">The description of the code to be executed as a sub-step.</param>
+    /// <param name="code">The code.</param>
+    IStepDescriptor AddAsyncSubStep(string description, Func<Task> code);
+
+    /// <summary>
     /// Executes code as a sub-step within the current step.
     /// </summary>
-    /// <param name="type">The sub step type.</param>
     /// <param name="description">The description of the code to be executed.</param>
     /// <param name="code">The code.</param>
     /// <returns>The same step descriptor instance used to make this call.</returns>
-    IStepDescriptor ExecuteSubStep(SubStepType type, string description, Action code);
+    IStepDescriptor ExecuteSubStep(string description, Action code);
 
     /// <summary>
     /// Executes async code as a sub-step within the current step.
     /// </summary>
-    /// <param name="type">The sub step type.</param>
     /// <param name="description">The description of the code to be executed.</param>
     /// <param name="code">The code.</param>
     /// <returns>The same step descriptor instance used to make this call.</returns>
-    IStepDescriptor ExecuteAsyncSubStep(SubStepType type, string description, Func<Task> code);
+    IStepDescriptor ExecuteAsyncSubStep(string description, Func<Task> code);
 
     /// <summary>
-    /// Executes the currently added sub-steps. When called multiple times, only new sub-steps will be executed.
+    /// Executes the sub-steps that were added since the previous execution.
     /// </summary>
-    void Execute();
+    IStepDescriptor Execute();
 }
