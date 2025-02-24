@@ -25,4 +25,9 @@ public interface IStepDescriptor
     /// <param name="code">The code.</param>
     /// <returns>The same step descriptor instance used to make this call.</returns>
     IStepDescriptor ExecuteAsyncSubStep(SubStepType type, string description, Func<Task> code);
+
+    /// <summary>
+    /// Executes the currently added sub-steps. When called multiple times, only new sub-steps will be executed.
+    /// </summary>
+    void Execute();
 }

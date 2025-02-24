@@ -1,27 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.Runners;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
 internal class StepDescriptor(Step step) : IStepDescriptor
 {
     private readonly List<SubStep> _subSteps = [];
-
-    public int SubStepCount { get; private set; }
-    
-    public IReadOnlyCollection<SubStep> GetSubSteps()
-    {
-        try
-        {
-            return _subSteps.ToArray();
-        }
-        finally
-        {
-            _subSteps.Clear();
-        }
-    }
+    public int ExecutedSubStepCount { get; private set; }
 
     public IStepDescriptor ExecuteSubStep(SubStepType type, string description, Action code)
     {
@@ -41,13 +28,27 @@ internal class StepDescriptor(Step step) : IStepDescriptor
 
     private IStepDescriptor AddSubStepFromDelegate(SubStepType type, string description, Delegate code)
     {
-        var order = SubStepCount + 1;
+        var order = _subSteps.Count + 1;
         var subStep = new SubStep(type, order, description, code);
         _subSteps.Add(subStep);
-        SubStepCount++;
 
         return this;
     }
 
-    private void Execute() => step.Execute();
+    public void Execute()
+    {
+        // get the sub steps added since the previous execution
+        var subSteps = _subSteps.Skip(ExecutedSubStepCount).ToArray();
+        if (subSteps.Length == 0) return;
+
+        try
+        {
+            step.Execute(subSteps);
+        }
+        finally
+        {
+            // make sure the just executed steps will not be included in the next execution
+            ExecutedSubStepCount += subSteps.Length;
+        }
+    }
 }

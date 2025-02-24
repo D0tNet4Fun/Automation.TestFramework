@@ -1,12 +1,18 @@
+using System;
 using System.Threading.Tasks;
 using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
 
-public class TestCase_ExpectedResult_MultipleAssertions
+public class TestCase_ExpectedResult_MultipleAssertions : IDisposable
 {
     private int _value;
+
+    public void Dispose()
+    {
+        Assert.Equal(4, _value);
+    }
 
     [Summary("Expected result with multiple assertions")]
     public void Summary()
@@ -36,6 +42,7 @@ public class TestCase_ExpectedResult_MultipleAssertions
             {
                 await Task.Delay(100);
                 Assert.Equal(3, _value);
+                _value = 4;
             });
     }
 }

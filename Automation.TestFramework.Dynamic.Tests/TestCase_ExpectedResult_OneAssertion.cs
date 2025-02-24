@@ -1,11 +1,17 @@
+using System;
 using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
 
-public class TestCase_ExpectedResult_OneAssertion
+public class TestCase_ExpectedResult_OneAssertion : IDisposable
 {
     private int _value;
+
+    public void Dispose()
+    {
+        Assert.Equal(3, _value);
+    }
 
     [Summary("Expected result with one assertion")]
     public void Summary()
@@ -31,7 +37,5 @@ public class TestCase_ExpectedResult_OneAssertion
                 Assert.Equal(2, _value);
                 _value = 3;
             });
-        
-        Assert.Equal(3, _value);
     }
 }

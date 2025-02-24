@@ -64,16 +64,13 @@ internal class Step : IDynamicStep
         return specificDescriptor;
     }
 
-    public IReadOnlyCollection<SubStep> GetSubSteps()
-    {
-        return _descriptor.GetSubSteps();
-    }
-
     public StepRunnerContext? RunnerContext { get; set; }
 
-    public void Execute()
+    public void Execute(IReadOnlyCollection<SubStep> subSteps)
     {
-        var task = StepRunner.Instance.RunCurrentStepSubSteps();
+        var task = SubStepRunner.Instance.Run(
+            RunnerContext,
+            subSteps);
         task.GetAwaiter().GetResult();
     }
 }
