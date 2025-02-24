@@ -5,6 +5,25 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Label="NuGet package properties">
+        <PackageId>Automation.TestFramework.SourceGenerators</PackageId>
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionSuffix>preview.1</VersionSuffix>
+        <PackageReleaseNotes>First release</PackageReleaseNotes>
+        <Authors>DotNet4Fun</Authors>
+        <Product>Automation.TestFramework.SourceGenerators</Product>
+        <Title>Automation.TestFramework.SourceGenerators</Title>
+        <Description>Source generators and analyzers for Automation.TestFramework.Dynamic.</Description>
+        <Copyright>Copyright © 2025 DotNet4Fun</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>xunit automation source generator</PackageTags>
+        <MinClientVersion>2.12</MinClientVersion>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/D0tNet4Fun/Automation.TestFramework</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,6 +41,10 @@
         <Compile Include="..\Automation.TestFramework.Dynamic\StepType.cs">
             <LinkBase>ObjectModel\Imported\</LinkBase>
         </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
