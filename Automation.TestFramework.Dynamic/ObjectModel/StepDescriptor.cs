@@ -5,7 +5,7 @@ using Automation.TestFramework.Dynamic.Runners;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
-internal class StepDescriptor : IStepDescriptor
+internal class StepDescriptor(Step step) : IStepDescriptor
 {
     private readonly List<SubStep> _subSteps = [];
 
@@ -49,9 +49,5 @@ internal class StepDescriptor : IStepDescriptor
         return this;
     }
 
-    private void Execute()
-    {
-        var task = StepRunner.Instance.RunCurrentStepSubSteps();
-        task.GetAwaiter().GetResult();
-    }
+    private void Execute() => step.Execute();
 }

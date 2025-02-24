@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
-internal class ExpectedResultDescriptor : StepDescriptor, IExpectedResultDescriptor
+internal class ExpectedResultDescriptor(Step step) : StepDescriptor(step), IExpectedResultDescriptor
 {
     public IExpectedResultDescriptor Assert(string description, Action code) => 
         (IExpectedResultDescriptor)ExecuteSubStep(SubStepType.Assertion, description, code);

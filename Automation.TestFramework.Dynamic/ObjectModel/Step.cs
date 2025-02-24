@@ -5,16 +5,27 @@ using Xunit.Internal;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
-internal class Step(StepType type, int index, int order, string description, Delegate code, IStepDescriptor descriptor)
-    : IDynamicStep
+internal class Step : IDynamicStep
 {
+    private readonly StepDescriptor _descriptor;
+    
+    public Step(StepType type, int index, int order, string description, Delegate code, Func<Step, StepDescriptor> descriptorFactory)
+    {
+        Type = type;
+        Index = index;
+        Order = order;
+        Description = Guard.ArgumentNotNull(description, nameof(description));
+        Code = Guard.ArgumentNotNull(code, nameof(code));
+        _descriptor = descriptorFactory(this); 
+    }
+
     public static Step Current => (Step)TestFramework.Step.Current;
 
-    public StepType Type { get; } = type;
-    public int Index { get; } = index;
-    public int Order { get; } = order;
-    public string Description { get; } = Guard.ArgumentNotNull(description, nameof(description));
-    public Delegate Code { get; } = Guard.ArgumentNotNull(code, nameof(code));
+    public StepType Type { get; }
+    public int Index { get; }
+    public int Order { get; }
+    public string Description { get; }
+    public Delegate Code { get; }
     public int? Timeout { get; set; }
 
     public IDynamicTest ToXunitTest()
@@ -42,21 +53,27 @@ internal class Step(StepType type, int index, int order, string description, Del
     public void PreInvoke() => TestFramework.Step.SetCurrent(this);
 
     public void PostInvoke() => TestFramework.Step.ResetCurrent();
-    
-    public IStepDescriptor Descriptor => descriptor;
+
+    public IStepDescriptor Descriptor => _descriptor;
 
     public TStepDescriptor GetDescriptor<TStepDescriptor>() where TStepDescriptor : IStepDescriptor
     {
-        if (descriptor is not TStepDescriptor specificDescriptor)
-            throw new InvalidOperationException($"{Type} step descriptor mismatch. Expected: {typeof(TStepDescriptor).Name}, actual: {descriptor.GetType().Name}.");
+        if (_descriptor is not TStepDescriptor specificDescriptor)
+            throw new InvalidOperationException($"{Type} step descriptor mismatch. Expected: {typeof(TStepDescriptor).Name}, actual: {_descriptor.GetType().Name}.");
 
         return specificDescriptor;
     }
 
     public IReadOnlyCollection<SubStep> GetSubSteps()
     {
-        return ((StepDescriptor)descriptor).GetSubSteps();
+        return _descriptor.GetSubSteps();
     }
-    
+
     public StepRunnerContext? RunnerContext { get; set; }
+
+    public void Execute()
+    {
+        var task = StepRunner.Instance.RunCurrentStepSubSteps();
+        task.GetAwaiter().GetResult();
+    }
 }

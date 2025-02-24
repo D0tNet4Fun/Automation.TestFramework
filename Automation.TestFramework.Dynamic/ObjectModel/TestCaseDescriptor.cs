@@ -27,13 +27,16 @@ internal class TestCaseDescriptor:  ITestCaseDescriptor
             _ => _steps.Count(s => s.Type == stepType) + 1,
         };
 
-        var descriptor = stepType switch
+        StepDescriptor SelectDescriptor(Step step)
         {
-            StepType.ExpectedResult => new ExpectedResultDescriptor(),
-            _ => new StepDescriptor()
-        };
+            return stepType switch
+            {
+                StepType.ExpectedResult => new ExpectedResultDescriptor(step),
+                _ => new StepDescriptor(step)
+            };
+        }
 
-        var step = new Step(stepType, index, order, description, code, descriptor);
+        var step = new Step(stepType, index, order, description, code, SelectDescriptor);
         _steps.Add(step);
 
         StepCount++;
