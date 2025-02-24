@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.12.0" PrivateAssets="All" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <Compile Include="..\Automation.TestFramework.Dynamic\Attributes\*.cs" 
+                 Exclude="..\Automation.TestFramework.Dynamic\Attributes\SummaryAttribute.cs">
+            <LinkBase>ObjectModel\Imported\</LinkBase>
+        </Compile>
+        <Compile Include="..\Automation.TestFramework.Dynamic\StepType.cs">
+            <LinkBase>ObjectModel\Imported\</LinkBase>
+        </Compile>
+    </ItemGroup>
+
+</Project>

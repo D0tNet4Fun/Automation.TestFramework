@@ -20,6 +20,12 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Automation.TestFramework.Dynamic\Automation.TestFramework.Dynamic.csproj" />
+        <ProjectReference Include="..\Automation.TestFramework.SourceGenerators\Automation.TestFramework.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <!-- Add the project directory as an additional file to pass it to the source generator -->
+    <ItemGroup>
+        <AdditionalFiles Include="$(MSBuildProjectDirectory)" />
     </ItemGroup>
 
     <ItemGroup>
