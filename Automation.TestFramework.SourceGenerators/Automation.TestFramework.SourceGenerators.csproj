@@ -32,16 +32,6 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0" PrivateAssets="All" />
         <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.12.0" PrivateAssets="All" />
     </ItemGroup>
-    
-    <ItemGroup>
-        <Compile Include="..\Automation.TestFramework.Dynamic\Attributes\*.cs" 
-                 Exclude="..\Automation.TestFramework.Dynamic\Attributes\SummaryAttribute.cs">
-            <LinkBase>ObjectModel\Imported\</LinkBase>
-        </Compile>
-        <Compile Include="..\Automation.TestFramework.Dynamic\StepType.cs">
-            <LinkBase>ObjectModel\Imported\</LinkBase>
-        </Compile>
-    </ItemGroup>
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Automation.TestFramework.SourceGenerators.ObjectModel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Automation.TestFramework.SourceGenerators;
