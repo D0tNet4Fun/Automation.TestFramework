@@ -57,6 +57,38 @@ public class TestCase1
     private void VerifyUserIsLoggedIn() {...}
 }
 ```
+The same test case can be defined in `v1` format using step attributes. This requires using `Automation.TestFramework.SourceGenerators`:
+```c#
+[TestCase("TC001")] // this is cosmetic
+public partial class TestCase1
+{
+    // define test data
+    private const string WebsiteUrl = "https://my.site.com";
+    private const string UserName = "user";
+    private const string Password = "password";
+
+    [Summary("Log in to website")]
+    public partial void LoginToWebSite();
+
+    [Precondition(1, "The user has an account on the website")]
+    private void CreateUserAccount() {...}
+
+    [Input(1, "The user has an account on the website")]
+    private void OpenWebBrowser() {...} // use WebsiteUrl
+
+    [Input(2, "Enter the user name")]
+    private void EnterUserName() {...} // use Username
+
+    [Input(3, "Enter the password")]
+    private void EnterPassword() {...} // use Password
+
+    [Input(4, "Click the Login button")]
+    private void LogIn() {...}
+
+    [ExpectedResult(4, "The user is logged in")]
+    private void VerifyUserIsLoggedIn() {...}
+}
+```
 Note: this changes a fundamental concept of xUnit, where a test method is viewed as a test case and the test class is viewed as a collection of related test cases. For us, the test case is the test class.
 
 ## Getting started
@@ -84,12 +116,10 @@ This way, the test report matches the test case definition as closely as possibl
 
 ## Test case definition
 ### Attributes
-The test framework uses attributes to identify test cases and their components:
+The test framework uses attributes to identify test cases:
 
 - `[TestCase]`: identifies a test class as a test case. This is purely cosmetic and can be omitted.
-- `[Summary]`: used as the 'entry point' of the test case that can be discovered by the test runner. 
-
-Each test case class should have a single test method marked as Summary.
+- `[Summary]`: used as the 'entry point' of the test case that can be discovered by the test runner. Each test case class should have a single test method marked as Summary.
 
 ### Steps
 The test case is defined as a sequence of steps. A step is defined by:
@@ -108,6 +138,14 @@ The code that implements the step can be anything. For example:
 - a method from the test class
 - a static method from another class
 - a closure
+
+#### Step attributes
+Step attributes become available when using `Automation.TestFramework.SourceGenerators`. They correspond to the 5 types of steps mentioned above:
+- `[Setup]`
+- `[Precondition]`
+- `[Input]`
+- `[ExpectedResult]`
+- `[Cleanup]`
 
 #### Execution
 The steps are executed in the order they are added to the current test case.
