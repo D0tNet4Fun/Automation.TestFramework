@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net4.7.2</TargetFrameworks>
+        <TargetFrameworks>net6.0;netstandard2.0;net472</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <!--    <GenerateDocumentationFile>true</GenerateDocumentationFile>-->
@@ -16,7 +16,7 @@
         <Authors>DotNet4Fun</Authors>
         <Product>Automation.TestFramework.Dynamic</Product>
         <Title>Automation.TestFramework.Dynamic</Title>
-        <Description>Xunit-based test framework for automating test cases. Supports .NET Standard 2.0 and .NET Framework 4.7.2+.</Description>
+        <Description>Xunit-based test framework for automating test cases. Supports .NET Standard 2.0, .NET 6.0+ and .NET Framework 4.7.2+.</Description>
         <Copyright>Copyright © 2025 DotNet4Fun</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>xunit automation</PackageTags>
