@@ -26,7 +26,7 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
         {
             relativeFilePath = Path.GetFileName(filePath);
         }
-        
+
         return Path.ChangeExtension(relativeFilePath, ".g.cs");
     }
 
@@ -41,9 +41,9 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
         }
 
         var steps = DiscoverSteps(methodSymbol);
-        OrderSteps(steps);
+        var orderedSteps = OrderSteps(steps);
 
-        var methodBody = GenerateMethodBody(steps);
+        var methodBody = GenerateMethodBody(orderedSteps);
 
         var namespaceDeclaration = _classDeclaration.Parent switch
         {
@@ -72,39 +72,70 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
               """;
     }
 
-    private static List<Step> DiscoverSteps(IMethodSymbol methodSymbol)
+    private static SortedList<int, IReadOnlyCollection<Step>> DiscoverSteps(IMethodSymbol methodSymbol)
     {
         StepDiscoverer stepDiscoverer = new();
-        List<Step> discoveredSteps = [];
+        SortedList<int, IReadOnlyCollection<Step>> discoveredSteps = [];
 
         // add the steps from the base types, starting with the last in chain
         var containingType = methodSymbol.ContainingType;
         var baseTypes = containingType.GetBaseTypes();
+        var level = 0;
         foreach (var type in baseTypes.Reverse())
         {
-            var baseClassSteps = stepDiscoverer.DiscoverSteps(type);
-            discoveredSteps.AddRange(baseClassSteps);
+            var baseClassSteps = stepDiscoverer.DiscoverSteps(type).ToArray();
+            if (baseClassSteps.Length == 0) continue;
+
+            discoveredSteps[level++] = baseClassSteps;
         }
 
         // add the steps from the current type
-        var steps = stepDiscoverer.DiscoverSteps(containingType);
-        discoveredSteps.AddRange(steps);
+        var steps = stepDiscoverer.DiscoverSteps(containingType).ToArray();
+        discoveredSteps[level] = steps;
 
         // return all discovered steps
         return discoveredSteps;
     }
 
-    private void OrderSteps(List<Step> steps)
+    private IReadOnlyCollection<Step> OrderSteps(SortedList<int, IReadOnlyCollection<Step>> stepsByClassHierarchy)
     {
-        steps.Sort((x, y) =>
+        var comparer = new StepComparer();
+        
+        // order the steps for each class in the hierarchy
+        var orderedStepsByClassHierarchy = new SortedList<int, IReadOnlyCollection<Step>>();
+        foreach (var unorderedSteps in stepsByClassHierarchy)
         {
-            // ensure the steps ore ordered first by Type, and then by Order
+            orderedStepsByClassHierarchy.Add(unorderedSteps.Key, OrderStepsFromSameClass(unorderedSteps.Value));
+        }
+        if (orderedStepsByClassHierarchy.Count == 1)
+        {
+            // there is no class hierarchy
+            return orderedStepsByClassHierarchy.First().Value;
+        }
 
-            if (x.Type != y.Type)
-                return x.Type.CompareTo(y.Type);
+        // else we have a class hierarchy such as TestClass : Derived : Base
+        // setups: start from Base ... TestClass (same as constructor order)
+        // .. rest of the steps
+        // cleanups: start from TestClass ... base (same as Dispose order)
+        List<Step> orderedSteps = [];
+        var depth = orderedStepsByClassHierarchy.Count - 2; // only base classes 
+        for (var i = 0; i <= depth; i++)
+        {
+            var steps = orderedStepsByClassHierarchy[i];
+            orderedSteps.AddRange(steps.Where(s => s.Type == StepType.Setup));
+        }
+        orderedSteps.AddRange(orderedStepsByClassHierarchy.Last().Value);
+        for (var i = depth; i >= 0; i--)
+        {
+            var steps = orderedStepsByClassHierarchy[i];
+            orderedSteps.AddRange(steps.Where(s => s.Type == StepType.Cleanup));
+        }
+        return orderedSteps;
 
-            return x.Order.CompareTo(y.Order);
-        });
+        IReadOnlyCollection<Step> OrderStepsFromSameClass(IReadOnlyCollection<Step> steps)
+        {
+            return steps.OrderBy(x => x, comparer).ToList();
+        }
     }
 
     private string GenerateMethodBody(IReadOnlyCollection<Step> steps)

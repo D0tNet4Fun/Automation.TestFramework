@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests.SourceGenerators;
 
-public partial class TestCase_Hierarchy : TestCaseBase
+public partial class TestCase_Hierarchy : TestCaseBase, IDisposable
 {
+    public void Dispose()
+    {
+        Assert.Equal(3, CallOrder.Count);
+        Assert.Equal(["Setup", "Input", "Cleanup"], CallOrder);
+    }
+
     [Summary]
     public partial void Summary();
 
@@ -17,15 +22,8 @@ public partial class TestCase_Hierarchy : TestCaseBase
     }
 }
 
-public class TestCaseBase : IDisposable
+public class TestCaseBase
 {
-    public void Dispose()
-    {
-        Assert.True(CallOrder.Count > 2);
-        Assert.Equal("Setup", CallOrder.First());
-        Assert.Equal("Cleanup", CallOrder.Last());
-    }
-
     public List<string> CallOrder { get; } = [];
 
     [Setup]
