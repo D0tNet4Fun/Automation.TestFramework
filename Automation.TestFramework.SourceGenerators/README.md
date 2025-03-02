@@ -18,7 +18,7 @@ public partial class TestCase1
     private const string Password = "password";
 
     [Summary("Log in to website")]
-    public partial void LoginToWebSite();
+    public partial void LoginToWebsite();
 
     [Precondition(1, "The user has an account on the website")]
     private void CreateUserAccount() {...}
@@ -42,17 +42,17 @@ public partial class TestCase1
 This generates the `Summary` as:
 
 ```c#
-    public partial void LoginToWebSite()
-    {
-        TestCase.Current.Descriptor
-            .AddStep(StepType.Precondition, "The user has an account on the website", CreateUserAccount)
-            .AddStep(StepType.Input, "The user has an account on the website", OpenWebBrowser)
-            .AddStep(StepType.Input, "Enter the user name", EnterUserName)
-            .AddStep(StepType.Input, "Enter the password", EnterPassword)
-            .AddStep(StepType.Input, "Click the Login button", LogIn)
-            .AddStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
-            ;
-    }
+public partial void LoginToWebsite()
+{
+    TestCase.Current.Descriptor
+        .AddStep(StepType.Precondition, "The user has an account on the website", CreateUserAccount)
+        .AddStep(StepType.Input, "The user has an account on the website", OpenWebBrowser)
+        .AddStep(StepType.Input, "Enter the user name", EnterUserName)
+        .AddStep(StepType.Input, "Enter the password", EnterPassword)
+        .AddStep(StepType.Input, "Click the Login button", LogIn)
+        .AddStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
+        ;
+}
 ```
 The only difference from `v1` is that the `Summary` method is now partial, and so is the test class.
 
@@ -91,13 +91,13 @@ public partial class TestCase1
 ```
 Then `Summary` will be generated as:
 ```c#
-    public partial void LoginToWebSite()
-    {
-        TestCase.Current.Descriptor
-            .AddStep(StepType.Input, "The user logs in to the website", OpenWebBrowserAndLogin)
-            .AddAsyncStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
-            ;
-    }
+public partial void LoginToWebsite()
+{
+    TestCase.Current.Descriptor
+        .AddStep(StepType.Input, "The user logs in to the website", OpenWebBrowserAndLogin)
+        .AddAsyncStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
+        ;
+}
 ```
 
 ### Readability
@@ -127,7 +127,7 @@ public class TestCaseBase
 public partial class TestCase1 : TestCaseBase
 {
     [Summary("Log in to website")]
-    public partial void LoginToWebSite();
+    public partial void LoginToWebsite();
 
     [Input(1, "The user logs in to the website" )]
     private void OpenWebBrowserAndLogin() {...}
@@ -141,15 +141,15 @@ public partial class TestCase1 : TestCaseBase
 ```
 Then the `Summary` method will be generated to include steps from the base class:
 ```c#
-    public partial void LoginToWebSite()
-    {
-        TestCase.Current.Descriptor
-            .AddStep(StepType.Setup, "Run this first", RunThisFirst)
-            .AddStep(StepType.Input, "The user logs in to the website", OpenWebBrowserAndLogin)
-            .AddAsyncStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
-            .AddStep(StepType.Cleanup, "Close browser", CloseBrowser)
-            .AddStep(StepType.Cleanup, "Run this last", RunThisLast)
-            ;
-    }
+public partial void LoginToWebsite()
+{
+    TestCase.Current.Descriptor
+        .AddStep(StepType.Setup, "Run this first", RunThisFirst)
+        .AddStep(StepType.Input, "The user logs in to the website", OpenWebBrowserAndLogin)
+        .AddAsyncStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
+        .AddStep(StepType.Cleanup, "Close browser", CloseBrowser)
+        .AddStep(StepType.Cleanup, "Run this last", RunThisLast)
+        ;
+}
 ```
-The discovery of `[Setup]` and `[Cleanup]` walks the entire test class hierarchy.
+The discovery of `[Setup]` and `[Cleanup]` walks the entire test class hierarchy. 
