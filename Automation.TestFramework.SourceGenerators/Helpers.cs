@@ -37,7 +37,7 @@ internal static class Helpers
         int GetOrder()
         {
             if (arguments.Length > 0 &&
-                int.TryParse(arguments[0].ToString(), out var order))
+                int.TryParse(arguments[0].Value?.ToString(), out var order))
             {
                 return order;
             }
