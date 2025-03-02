@@ -11,7 +11,7 @@
     <PropertyGroup Label="NuGet package properties">
         <PackageId>Automation.TestFramework.SourceGenerators</PackageId>
         <VersionPrefix>1.0.0</VersionPrefix>
-        <VersionSuffix>preview.1</VersionSuffix>
+        <VersionSuffix>preview.2</VersionSuffix>
         <PackageReleaseNotes>First release</PackageReleaseNotes>
         <Authors>DotNet4Fun</Authors>
         <Product>Automation.TestFramework.SourceGenerators</Product>
@@ -29,12 +29,18 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="All" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.12.0" PrivateAssets="All" />
     </ItemGroup>
 
+    <!-- NuGet package layout -->
+    <PropertyGroup>
+        <!-- the package provides the custom attributes used to generate code -->
+        <IncludeBuildOutput>true</IncludeBuildOutput>
+    </PropertyGroup>
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />
+        <!-- include the source generator as an analyzer -->
+        <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
     </ItemGroup>
+    <!-- end NuGet package layout -->
 
 </Project>
