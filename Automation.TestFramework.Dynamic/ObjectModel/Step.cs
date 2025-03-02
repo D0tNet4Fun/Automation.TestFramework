@@ -44,10 +44,18 @@ internal class Step : IDynamicStep
         {
             // sample: [1/10] [Input] 1. Do something
             var typeDescription = Type.GetDisplayName();
-            var testDisplayName = $"[{Index}/{testCase.StepCount}] [{typeDescription}] {Order}. {Description}";
+            var testDisplayName = $"[{GetPosition(testCase.StepCount)}] [{typeDescription}] {Order}. {Description}";
 
             return testDisplayName;
         }
+    }
+
+    public string GetPosition(int count)
+    {
+        // samples: [1/9], [01/10], [001/100]
+        var maxDigits = count.ToString().Length;
+
+        return $"{Index.ToString().PadLeft(maxDigits, '0')}/{count}";
     }
 
     public void PreInvoke() => TestFramework.Step.SetCurrent(this);

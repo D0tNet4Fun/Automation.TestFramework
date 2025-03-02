@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Automation.TestFramework.Dynamic.ObjectModel;
-using Xunit;
 using Xunit.v3;
 
 namespace Automation.TestFramework.Dynamic.Runners;

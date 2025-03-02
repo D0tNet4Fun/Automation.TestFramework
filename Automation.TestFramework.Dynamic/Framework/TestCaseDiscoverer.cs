@@ -11,7 +11,7 @@ internal class TestCaseDiscoverer : FactDiscoverer
     {
         var xunitTestCase = (XunitTestCase)base.CreateTestCase(discoveryOptions, testMethod, factAttribute);
         
-        var summaryAttribute = testMethod.Method.GetCustomAttribute<SummaryAttribute>();
+        var summaryAttribute = testMethod.Method.GetCustomAttribute<SummaryAttribute>()!;
         var displayName = GetTestCaseDisplayName(summaryAttribute, testMethod.Method);
 
         return new ObjectModel.TestCase(xunitTestCase, displayName);

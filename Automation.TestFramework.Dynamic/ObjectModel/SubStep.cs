@@ -26,7 +26,7 @@ internal class SubStep(SubStepType type, int order, string description, Delegate
             // sample: [3/10] [Expected result] 1.1. This should work
             // sample: [3/10] [Expected result] 1.2. This should work too
             var typeDescription = $"{step.Type.GetDisplayName()}";
-            var testDisplayName = $"[{step.Index}/{testCase.StepCount}] [{typeDescription}] {step.Order}.{order}. {Description}";
+            var testDisplayName = $"[{step.GetPosition(testCase.StepCount)}] [{typeDescription}] {step.Order}.{order}. {Description}";
 
             return testDisplayName;
         }
