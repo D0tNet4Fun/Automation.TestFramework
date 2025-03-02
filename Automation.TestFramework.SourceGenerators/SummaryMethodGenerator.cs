@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Automation.TestFramework.SourceGenerators.ObjectModel;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Automation.TestFramework.SourceGenerators;
@@ -29,10 +30,18 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
         return Path.ChangeExtension(relativeFilePath, ".g.cs");
     }
 
-    public string GenerateCode()
+    public string GenerateCode(Compilation compilation)
     {
-        var steps = ExtractStepsFromClassMethods().ToList();
-        // todo order steps
+        var semanticModel = compilation.GetSemanticModel(summaryMethodDeclaration.SyntaxTree);
+        var methodSymbol = semanticModel.GetDeclaredSymbol(summaryMethodDeclaration) as IMethodSymbol;
+        if (methodSymbol == null)
+        {
+            // todo
+            return string.Empty;
+        }
+
+        var steps = DiscoverSteps(methodSymbol);
+        OrderSteps(steps);
 
         var methodBody = GenerateMethodBody(steps);
 
@@ -63,33 +72,39 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
               """;
     }
 
-    private IEnumerable<Step> ExtractStepsFromClassMethods()
+    private static List<Step> DiscoverSteps(IMethodSymbol methodSymbol)
     {
-        foreach (var methodDeclaration in _classDeclaration.Members.OfType<MethodDeclarationSyntax>())
+        StepDiscoverer stepDiscoverer = new();
+        List<Step> discoveredSteps = [];
+
+        // add the steps from the base types, starting with the last in chain
+        var containingType = methodSymbol.ContainingType;
+        var baseTypes = containingType.GetBaseTypes();
+        foreach (var type in baseTypes.Reverse())
         {
-            if (methodDeclaration == summaryMethodDeclaration) continue;
-
-            var attribute = methodDeclaration.AttributeLists
-                .SelectMany(list => list.Attributes)
-                .FirstOrDefault(attribute => attribute.IsStepAttribute());
-
-            if (attribute is null) continue;
-
-            var methodName = methodDeclaration.Identifier.Text;
-
-            var stepAttribute = attribute.ToStepAttribute()!;
-            var description = stepAttribute.Description ?? methodName; // todo humanize?
-            yield return new Step(stepAttribute.Type, stepAttribute.Order, description, methodName, IsAsyncMethod());
-            continue;
-
-            bool IsAsyncMethod()
-            {
-                var returnType = methodDeclaration.ReturnType is GenericNameSyntax genericType
-                    ? genericType.Identifier.Text
-                    : methodDeclaration.ReturnType.ToString();
-                return returnType is "Task" or "ValueTask";
-            }
+            var baseClassSteps = stepDiscoverer.DiscoverSteps(type);
+            discoveredSteps.AddRange(baseClassSteps);
         }
+
+        // add the steps from the current type
+        var steps = stepDiscoverer.DiscoverSteps(containingType);
+        discoveredSteps.AddRange(steps);
+
+        // return all discovered steps
+        return discoveredSteps;
+    }
+
+    private void OrderSteps(List<Step> steps)
+    {
+        steps.Sort((x, y) =>
+        {
+            // ensure the steps ore ordered first by Type, and then by Order
+
+            if (x.Type != y.Type)
+                return x.Type.CompareTo(y.Type);
+
+            return x.Order.CompareTo(y.Order);
+        });
     }
 
     private string GenerateMethodBody(IReadOnlyCollection<Step> steps)
