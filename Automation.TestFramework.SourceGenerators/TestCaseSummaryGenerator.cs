@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -14,7 +13,7 @@ public class TestCaseSummaryGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        //Debugger.Launch();
+        //System.Diagnostics.Debugger.Launch();
 
         // Register additional file provider for project directory
         var additionalFilesProvider = context.AdditionalTextsProvider

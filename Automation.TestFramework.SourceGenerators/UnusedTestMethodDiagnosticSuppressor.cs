@@ -21,7 +21,7 @@ public class UnusedTestMethodDiagnosticSuppressor : DiagnosticSuppressor
 
     public override void ReportSuppressions(SuppressionAnalysisContext context)
     {
-        // Debugger.Launch();
+        //System.Diagnostics.Debugger.Launch();
         
         foreach (var diagnostic in context.ReportedDiagnostics)
         {
