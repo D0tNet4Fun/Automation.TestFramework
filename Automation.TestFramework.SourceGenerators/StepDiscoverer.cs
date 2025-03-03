@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Automation.TestFramework.SourceGenerators.ObjectModel;
+using Humanizer;
 using Microsoft.CodeAnalysis;
 
 namespace Automation.TestFramework.SourceGenerators;
@@ -19,7 +20,7 @@ internal class StepDiscoverer
             var methodName = method.Name;
     
             var stepAttribute = attribute.ToStepAttribute();
-            var description = stepAttribute.Description ?? methodName; // todo humanize?
+            var description = stepAttribute.Description ?? methodName.Humanize();
             yield return new Step(stepAttribute.Type, stepAttribute.Order, description, methodName, method.IsAsync);
         }
     }

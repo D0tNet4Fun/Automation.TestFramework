@@ -27,6 +27,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Humanizer.Core" Version="2.14.1" PrivateAssets="All" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="All" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="All" />
     </ItemGroup>
@@ -43,4 +44,25 @@
     </ItemGroup>
     <!-- end NuGet package layout -->
 
+    <!-- NuGet package: include Humanizer -->
+    <!-- https://www.thinktecture.com/en/net/roslyn-source-generators-using-3rd-party-libraries/ -->
+    <PropertyGroup>
+        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+    </PropertyGroup>
+    <ItemGroup>
+        <!-- update the Humanizer.Core NuGet package reference to generate the path property $(PkgHumanizer_Core) -->
+        <PackageReference Update="Humanizer.Core">
+            <GeneratePathProperty>true</GeneratePathProperty>
+        </PackageReference>
+        <!-- use this path property to locate the Humanizer.Core DLLs are pack them next to the source generator -->
+        <None Include="$(PkgHumanizer_Core)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+    <Target Name="GetDependencyTargetPaths">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker
+                    Include="$(PkgHumanizer_Core)\lib\netstandard2.0\Humanizer.dll"
+                    IncludeRuntimeDependency="false" />
+        </ItemGroup>
+    </Target>
+    <!-- end NuGet package: include Humanizer -->
 </Project>
