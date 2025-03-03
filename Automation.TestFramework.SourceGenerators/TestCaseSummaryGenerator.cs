@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,6 +11,16 @@ namespace Automation.TestFramework.SourceGenerators;
 [Generator]
 public class TestCaseSummaryGenerator : IIncrementalGenerator
 {
+#pragma warning disable RS2000, RS2008
+    private static readonly DiagnosticDescriptor ErrorDescriptor = new(
+        id: "AUTFSG001",
+        title: "Source Generator Error",
+        messageFormat: "Unexpected error occurred: {0}",
+        category: "SourceGeneration",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+#pragma warning restore RS2000, RS2008
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         //System.Diagnostics.Debugger.Launch();
@@ -40,17 +51,31 @@ public class TestCaseSummaryGenerator : IIncrementalGenerator
         });
     }
 
-    private static void Execute(SourceProductionContext sourceProductionContext, 
-        string projectDirectory, 
-        Compilation compilation, 
+    private static void Execute(SourceProductionContext sourceProductionContext,
+        string projectDirectory,
+        Compilation compilation,
         ImmutableArray<MethodDeclarationSyntax> summaryMethods)
     {
         foreach (var method in summaryMethods)
         {
-            var generator = new SummaryMethodGenerator(method);
-            var fileName = generator.GetFileName(projectDirectory);
-            var code = generator.GenerateCode(compilation);
-            sourceProductionContext.AddSource(fileName, SourceText.From(code, Encoding.UTF8));
+            try
+            {
+                var generator = new SummaryMethodGenerator(method);
+                var fileName = generator.GetFileName(projectDirectory);
+                var code = generator.GenerateCode(compilation);
+                sourceProductionContext.AddSource(fileName, SourceText.From(code, Encoding.UTF8));
+            }
+            catch (Exception ex)
+            {
+                // try to report this exception as a diagnostic (against the rules...)
+                ReportError(sourceProductionContext, method, ex);
+            }
         }
+    }
+
+    private static void ReportError(SourceProductionContext context, SyntaxNode origin, Exception exception)
+    {
+        var diagnostic = Diagnostic.Create(ErrorDescriptor, origin.GetLocation(), exception.Message);
+        context.ReportDiagnostic(diagnostic);
     }
 }
