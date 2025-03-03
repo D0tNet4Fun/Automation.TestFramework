@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,10 +14,13 @@ public class TestCaseSummaryGenerator : IIncrementalGenerator
     {
         //System.Diagnostics.Debugger.Launch();
 
-        // Register additional file provider for project directory
-        var additionalFilesProvider = context.AdditionalTextsProvider
-            //.Where(file => file.Path.EndsWith(@"\\"))
-            .Collect();
+        // https://andrewlock.net/creating-a-source-generator-part-13-providing-and-accessing-msbuild-settings-in-source-generators/
+        var projectDirectoryProvider = context.AnalyzerConfigOptionsProvider
+            .Select((options, _) =>
+            {
+                if (!options.GlobalOptions.TryGetValue("build_property.ProjectDir", out var projectDir)) return null;
+                return projectDir;
+            });
 
         var methodsWithSummaryAttributes = context.SyntaxProvider
             .ForAttributeWithMetadataName(
@@ -27,25 +29,22 @@ public class TestCaseSummaryGenerator : IIncrementalGenerator
                 (ctx, _) => (MethodDeclarationSyntax)ctx.TargetNode)
             .Collect();
 
-        var combined = additionalFilesProvider
+        var combined = projectDirectoryProvider
             .Combine(context.CompilationProvider)
             .Combine(methodsWithSummaryAttributes);
 
         context.RegisterSourceOutput(combined, (spc, source) =>
         {
-            var (additionalFiles, compilation, summaryMethods) = (source.Left.Left, source.Left.Right, source.Right);
-            Execute(spc, additionalFiles, compilation, summaryMethods);
+            var (projectDirectory, compilation, summaryMethods) = (source.Left.Left!, source.Left.Right, source.Right);
+            Execute(spc, projectDirectory, compilation, summaryMethods);
         });
     }
 
     private static void Execute(SourceProductionContext sourceProductionContext, 
-        ImmutableArray<AdditionalText> additionalFiles, 
+        string projectDirectory, 
         Compilation compilation, 
         ImmutableArray<MethodDeclarationSyntax> summaryMethods)
     {
-        var projectDirectory = additionalFiles.FirstOrDefault()?.Path;
-        if (projectDirectory == null) return;
-
         foreach (var method in summaryMethods)
         {
             var generator = new SummaryMethodGenerator(method);

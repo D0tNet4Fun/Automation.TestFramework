@@ -20,7 +20,7 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
         string relativeFilePath;
         if (filePath.StartsWith(projectDirectory))
         {
-            relativeFilePath = filePath.Substring(projectDirectory.Length + 1).Replace(@"\", "/");
+            relativeFilePath = filePath.Substring(projectDirectory.Length).Replace(@"\", "/");
         }
         else
         {
