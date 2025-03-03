@@ -33,11 +33,9 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
     public string GenerateCode(Compilation compilation)
     {
         var semanticModel = compilation.GetSemanticModel(summaryMethodDeclaration.SyntaxTree);
-        var methodSymbol = semanticModel.GetDeclaredSymbol(summaryMethodDeclaration) as IMethodSymbol;
-        if (methodSymbol == null)
+        if (semanticModel.GetDeclaredSymbol(summaryMethodDeclaration) is not IMethodSymbol methodSymbol)
         {
-            // todo
-            return string.Empty;
+            throw new InvalidOperationException("Summary is not a method");
         }
 
         var steps = DiscoverSteps(methodSymbol);
