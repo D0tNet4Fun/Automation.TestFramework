@@ -1,5 +1,4 @@
 using System;
-using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
@@ -31,7 +30,7 @@ public class TestCase_ExpectedResult_FailedVerfication_FailedAssertion : IDispos
     {
         Assert.Equal(1, _value);
 
-        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+        ExpectedResultStep.Current.Descriptor
             .Verify("This should fail, but it's not critical", () =>
             {
                 Assert.Fail("Failed verification on purpose");

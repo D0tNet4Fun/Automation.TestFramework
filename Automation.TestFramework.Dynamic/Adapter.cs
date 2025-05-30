@@ -18,6 +18,6 @@ public class TestStep
     [Obsolete("Use " + nameof(Current) + " instead.")]
     public static TestStep GetCurrent() => Current;
 
-    [Obsolete("Use " + nameof(Step.Current.GetDescriptor) + "<" + nameof(IExpectedResultDescriptor) + ">() instead.")]
-    public IExpectedResultDescriptor ExpectedResult => Step.Current.GetDescriptor<IExpectedResultDescriptor>();
+    [Obsolete("Use " + nameof(ExpectedResultStep) + "." + nameof(ExpectedResultStep.Current) + "." + nameof(ExpectedResultStep.Current.Descriptor) +" instead.")]
+    public IExpectedResultDescriptor ExpectedResult => ExpectedResultStep.Current.Descriptor;
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
@@ -32,7 +31,7 @@ public class TestCase_ExpectedResult_MultipleAssertions : IDisposable
         Assert.Equal(1, _value);
 
         _value = 2;
-        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+        ExpectedResultStep.Current.Descriptor
             .Assert("This should work", () =>
             {
                 Assert.Equal(2, _value);

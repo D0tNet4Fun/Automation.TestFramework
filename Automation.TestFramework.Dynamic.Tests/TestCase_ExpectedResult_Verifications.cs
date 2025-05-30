@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
@@ -25,7 +24,7 @@ public class TestCase_ExpectedResult_Verifications
     {
         Assert.Equal(1, _value);
 
-        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+        ExpectedResultStep.Current.Descriptor
             .Verify("This should fail", () =>
             {
                 Assert.Fail("Failed on purpose");

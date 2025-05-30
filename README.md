@@ -227,7 +227,7 @@ For the above test case, assume that when either of the user display name / emai
 ```C#
 private void ExpectedResult()
 {
-    Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+    ExpectedResultStep.Current.Descriptor
         .Assert("Expect the user display name is correct", () => Assert.[...])
         .AssertAsync("Expect the email is correct", async () => 
         { 
@@ -257,7 +257,7 @@ For the above test case, assume that when one of the user display name / email i
 [ExpectedResult]
 private void ExpectedResult()
 {
-    Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+    ExpectedResultStep.Current.Descriptor
        .Verify("Expect the user display name is correct", () => Assert.[...])
        .VerifyAsync("Expect the email is correct", async () => 
         { 

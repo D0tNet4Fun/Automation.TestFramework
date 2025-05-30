@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Automation.TestFramework.Dynamic.ObjectModel;
 using Xunit;
 
 namespace Automation.TestFramework.Dynamic.Tests;
@@ -32,19 +31,19 @@ public class TestCase_ExpectedResult_FailedAssertion_SkippedOtherSubSteps : IDis
     {
         Assert.Equal(1, _value);
 
-        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+        ExpectedResultStep.Current.Descriptor
             .Assert("This should fail", () =>
             {
                 Assert.Fail("Failed on purpose");
             });
         
-        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+        ExpectedResultStep.Current.Descriptor
             .Assert("This should be skipped", () =>
             {
                 _calledSubSteps.Add(1);
             });
         
-        Step.Current.GetDescriptor<IExpectedResultDescriptor>()
+        ExpectedResultStep.Current.Descriptor
             .Assert("This should be skipped too", () =>
             {
                 _calledSubSteps.Add(2);
