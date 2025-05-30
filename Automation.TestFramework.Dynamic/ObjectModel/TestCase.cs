@@ -8,7 +8,7 @@ using Xunit.v3;
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
 internal class TestCase(XunitTestCase xtc, string displayName)
-    : XunitTestCase(xtc.TestMethod, displayName, xtc.UniqueID, xtc.Explicit, xtc.SkipReason, xtc.SkipType, xtc.SkipUnless, xtc.SkipWhen, xtc.Traits, xtc.TestMethodArguments, xtc.SourceFilePath, xtc.SourceLineNumber, xtc.Timeout),
+    : XunitTestCase(xtc.TestMethod, displayName, xtc.UniqueID, xtc.Explicit, xtc.SkipExceptions, xtc.SkipReason, xtc.SkipType, xtc.SkipUnless, xtc.SkipWhen, xtc.Traits, xtc.TestMethodArguments, xtc.SourceFilePath, xtc.SourceLineNumber, xtc.Timeout),
     IDynamicTestCase, ITestCase, ISelfExecutingXunitTestCase
 {
     /// <summary>
