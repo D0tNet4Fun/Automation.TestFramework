@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Automation.TestFramework.Entities;
+using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using ITest = Automation.TestFramework.Entities.ITest;
@@ -74,11 +75,22 @@ namespace Automation.TestFramework.Execution
             if (_testCaseDiscoveryException != null)
                 return FailBecauseOfException(_testCaseDiscoveryException);
 
+            if (_testClassInstance is IAsyncLifetime asyncLifetime)
+            {
+                await Aggregator.RunAsync(asyncLifetime.InitializeAsync);
+            }
+
             var runSummary = new RunSummary();
             // run the test case components first
             runSummary.Aggregate(await RunTestCaseComponents());
             // run the Summary last
             runSummary.Aggregate(await RunTestCaseSummary(runSummary.Failed > 0));
+
+            if (_testClassInstance is IAsyncLifetime asyncLifetime2)
+            {
+                await Aggregator.RunAsync(asyncLifetime2.DisposeAsync);
+            }
+            
             return runSummary;
         }
 
