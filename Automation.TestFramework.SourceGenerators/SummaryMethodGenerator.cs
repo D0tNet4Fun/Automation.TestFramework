@@ -158,10 +158,12 @@ internal class SummaryMethodGenerator(MethodDeclarationSyntax summaryMethodDecla
         foreach (var step in steps)
         {
             var addStepMethodName = step.IsAsync ? "AddAsyncStep" : "AddStep";
+            var stepDescription = step.Description.EscapeString();
+
             string[] addStepMethodArgs =
             [
                 $"StepType.{step.Type}",
-                $"\"{step.Description}\"",
+                stepDescription,
                 step.MethodName
             ];
             builder.AppendLine($"{indent}.{addStepMethodName}({string.Join(", ", addStepMethodArgs)})");

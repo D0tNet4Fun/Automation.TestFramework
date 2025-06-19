@@ -47,7 +47,7 @@ internal static class Helpers
 
         string? GetDescription()
         {
-            return arguments.Length > 1 ? arguments[1].Value?.ToString().Trim('\"') : null;
+            return arguments.Length > 1 ? arguments[1].Value?.ToString() : null;
         }
     }
 
@@ -62,5 +62,37 @@ internal static class Helpers
         }
 
         return baseTypes;
+    }
+
+    public static string EscapeString(this string value)
+    {
+        char[] escapeChars =
+        [
+            '\\',
+            '\"',
+            '\r',
+            '\n',
+            '\t',
+        ];
+
+        string result;
+
+        // fast path
+        if (value.IndexOfAny(escapeChars) < 0)
+        {
+            result = value;
+        }
+        else
+        {
+            result = value
+                    .Replace("\\", @"\\")
+                    .Replace("\"", "\\\"")
+                    .Replace("\r", "\\r")
+                    .Replace("\n", "\\n")
+                    .Replace("\t", "\\t")
+                ;
+        }
+
+        return $"\"{result}\"";
     }
 }
