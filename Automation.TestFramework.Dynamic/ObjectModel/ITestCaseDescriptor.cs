@@ -12,5 +12,7 @@ public interface ITestCaseDescriptor
     
     ITestCaseDescriptor AddAsyncStep(StepType stepType, string description, Func<Task> code);
     
+    ITestCaseDescriptor AddAsyncStep(StepType stepType, string description, Func<ValueTask> code);
+    
     //void Run();
 }

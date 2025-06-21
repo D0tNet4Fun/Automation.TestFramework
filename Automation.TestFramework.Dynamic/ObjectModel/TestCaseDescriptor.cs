@@ -17,6 +17,9 @@ internal class TestCaseDescriptor:  ITestCaseDescriptor
     public ITestCaseDescriptor AddAsyncStep(StepType stepType, string description, Func<Task> code) =>
         AddStepFromDelegate(stepType, description, code);
 
+    public ITestCaseDescriptor AddAsyncStep(StepType stepType, string description, Func<ValueTask> code) =>
+        AddStepFromDelegate(stepType, description, code);
+
     private ITestCaseDescriptor AddStepFromDelegate(StepType stepType, string description, Delegate code)
     {
         var index = _steps.Count + 1;
