@@ -1,154 +1,219 @@
-# Automation.TestFramework
-This is a test framework based on [xUnit.net](http://xunit.github.io). The framework is designed for automated tests that are written based on test cases. 
+# Automation.TestFramework.Dynamic
+This is a test framework based on [xUnit.net v3](https://xunit.net/docs/getting-started/v3/cmdline) that allows defining a test case as a sequence of steps and sub-steps. These steps and sub-steps are based on code defined either as named methods or closures.
 
-The framework allows the user to define a test case to a test class. The test case preconditions and steps can be mapped as methods. The framework ensures they are executed in the correct order.
+The framework is designed for automated tests that are written based on test cases. 
 
 ## Test case definition
 Consider a test case based on the template at http://www.softwaretestinghelp.com/test-case-template-examples:
 
+```
 Test case ID: TC001
 
-Test case summary: Login to web site
+Test case summary: Log in to website
 
-Precondition: The user has an account on the web site
+Precondition: The user has an account on the website
 
-Step | Test step | Test data | Expected result | Actual result | Status
---- | --- | --- | --- | --- | --- 
-1 | Open a web browser and navigate to the web site | http://my.site.com | | | |
-2 | Enter the user name | user | | | |
-3 | Enter password | password | | | |
-4 | Click the Login button | | The user is logged in | |
-
-We can define this test case as a test class:
+| Step | Test step                                      | Test data           | Expected result       | Actual result | Status |
+|------|------------------------------------------------|---------------------|-----------------------|---------------|--------|
+| 1    | Open a web browser and navigate to the website | https://my.site.com |                       |               |        |
+| 2    | Enter the user name                            | user                |                       |               |        |
+| 3    | Enter password                                 | password            |                       |               |        |
+| 4    | Click the Login button                         |                     | The user is logged in |               |        |
+```
+This test case can be defined as a test class:
 ```c#
-[TestCase("TC001")]
+[TestCase("TC001")] // this is cosmetic
 public class TestCase1
 {
-	// define test data
-	private const string WebSiteUrl = "http://my.site.com";
-	private const string UserName = "user";
-	private const string Password = "password";
+    // define test data
+    private const string WebsiteUrl = "https://my.site.com";
+    private const string UserName = "user";
+    private const string Password = "password";
 
-	[Summary("Login to web site")]
-	public void LoginToWebSite() { } // leave this empty
-	
-	[Precondition("The user has an account on the web site")]
-	private void CreateUserAccount() {...}
-	
-	[Input(1, "Open a web browser and navigate to the web site")]
-	private void OpenWebBrowser() {...} // use WebSiteUrl
-	
-	[Input(2, "Enter the user name")]
-	private void EnterUserName() {...} // use Username
-	
-	[Input(3, "Enter password")]
-	private void EnterPassword() {...} // use Password
-	
-	[Input(4, "Click the Login button")]
-	private void LogIn() {...}
-	
-	[ExpectedResult(4, "The user is logged in")]
-	private void VerifyUserIsLoggedIn() {...}
+    [Summary("Log in to website")]
+    public void LoginToWebSite()
+    {
+        // describe the test case steps
+        TestCase.Current.Descriptor
+            .AddStep(StepType.Precondition, "The user has an account on the website", CreateUserAccount)
+            .AddStep(StepType.Input, "The user has an account on the website", OpenWebBrowser)
+            .AddStep(StepType.Input, "Enter the user name", EnterUserName)
+            .AddStep(StepType.Input, "Enter the password", EnterPassword)
+            .AddStep(StepType.Input, "Click the Login button", LogIn)
+            .AddStep(StepType.ExpectedResult, "The user is logged in", VerifyUserIsLoggedIn)
+            ;
+    }
+
+    private void CreateUserAccount() {...}
+
+    private void OpenWebBrowser() {...} // use WebsiteUrl
+
+    private void EnterUserName() {...} // use Username
+
+    private void EnterPassword() {...} // use Password
+
+    private void LogIn() {...}
+
+    private void VerifyUserIsLoggedIn() {...}
+}
+```
+The same test case can be defined in `v1` format using step attributes. This requires using `Automation.TestFramework.SourceGenerators`:
+```c#
+[TestCase("TC001")] // this is cosmetic
+public partial class TestCase1
+{
+    // define test data
+    private const string WebsiteUrl = "https://my.site.com";
+    private const string UserName = "user";
+    private const string Password = "password";
+
+    [Summary("Log in to website")]
+    public partial void LoginToWebSite();
+
+    [Precondition(1, "The user has an account on the website")]
+    private void CreateUserAccount() {...}
+
+    [Input(1, "The user has an account on the website")]
+    private void OpenWebBrowser() {...} // use WebsiteUrl
+
+    [Input(2, "Enter the user name")]
+    private void EnterUserName() {...} // use Username
+
+    [Input(3, "Enter the password")]
+    private void EnterPassword() {...} // use Password
+
+    [Input(4, "Click the Login button")]
+    private void LogIn() {...}
+
+    [ExpectedResult(4, "The user is logged in")]
+    private void VerifyUserIsLoggedIn() {...}
 }
 ```
 Note: this changes a fundamental concept of xUnit, where a test method is viewed as a test case and the test class is viewed as a collection of related test cases. For us, the test case is the test class.
 
-### Running the test case
-When the test runner discovers the test case, the only test method visible is the one marked as *Summary*. This is rendered using the description, i.e. _Login to web site_.
+## Getting started
+Create a new xUnit test project as explained in https://xunit.net/docs/getting-started/v3/cmdline#create-the-unit-test-project.
 
-When the Summary method is executed, all the other test methods are discovered and they show as tests linked to the Summary test method. Their names are rendered using their descriptions.
+Then add the NuGet package `Automation.TestFramework.Dynamic`.
+
+### Supported frameworks
+The test framework has the same target framework as `xUnit v3`:
+- .NET Standard 2.0
+- .NET Framework 4.7.2
+- .NET 6.0
+
+### Discovering the test case
+The test method marked as `[Summary]` is automatically discovered by the xUnit test runner, as it was a `[Fact]`.
+
+The actual test case steps are **not** discovered until the test is executed, which is why they are called dynamic tests. 
+
+### Executing the test case
+Run the `Summary` test to start discovering the actual test case steps based on closures. 
+These closures are executed by the test framework in the order in which they were added when describing the test case.
+Each closure is wrapped inside a test result linked to the `Summary` test. The display names of these tests are given by the description used when adding the steps.
 
 This way, the test report matches the test case definition as closely as possible.
 
-## How to use in VS 2017
-Create a new xUnit test project for .NET Core and then add a reference to Automation.TestFramework. The package is also available on NuGet.org.
+## Test case definition
+### Attributes
+The test framework uses attributes to identify test cases:
 
-Add the following code:
-```C#
-[assembly: TestFramework("Automation.TestFramework.Framework", "Automation.TestFramework")]
+- `[TestCase]`: identifies a test class as a test case. This is purely cosmetic and can be omitted.
+- `[Summary]`: used as the 'entry point' of the test case that can be discovered by the test runner. Each test case class should have a single test method marked as Summary.
+
+### Steps
+The test case is defined as a sequence of steps. A step is defined by:
+- the step type
+- a description (used as display name)
+- the code that implements the step
+
+The test framework defines 5 types of steps:
+- Setup
+- Precondition
+- Input
+- Expected result
+- Cleanup
+
+The code that implements the step can be anything. For example:
+- a method from the test class
+- a static method from another class
+- a closure
+
+#### Step attributes
+Step attributes become available when using `Automation.TestFramework.SourceGenerators`. They correspond to the 5 types of steps mentioned above:
+- `[Setup]`
+- `[Precondition]`
+- `[Input]`
+- `[ExpectedResult]`
+- `[Cleanup]`
+
+#### Execution
+The steps are executed in the order they are added to the current test case.
+
+If a step fails before other steps are executed, then the other steps are executed as skipped tests, except for the `Cleanup` steps. These are always executed.
+
+#### Adding steps
+Steps are added to the current test case inside the `Summary` method.
+```c#
+[Summary]
+public void Summary
+{
+    TestCase.Current.Descriptor
+        .AddStep(StepType.Input, "This is the input", Input)
+}
+
+private void Input() { ... }
+```
+If the code that implements the step returns a `Task` or `ValueTask`, then the step is considered async.
+Async steps are added using `.AddAsyncStep()`:
+
+```c#
+[Summary]
+public void Summary
+{
+    TestCase.Current.Descriptor
+        .AddStep(StepType.Input, "This is the input", Input)
+        .AddAsyncStep(StepType.ExpectedResult, "This is the expected result", ExpectedResult);
+}
+
+private void Input() { ... }
+private Task ExpectedResult() { ... }
 ```
 
-**Note**: make sure the project dependencies include the ones mentioned on http://xunit.github.io/docs/getting-started-dotnet-core.html#run-tests-visualstudio.
+A test case can have both sync and async steps.
 
+### Sub-steps
+Each step can have sub-steps. These are dynamic tests that run during the current step execution.
 
-## Supported frameworks
-The test framework supports .NET 4.6.1 or later and .NET Standard 2.0.
+```c#
+private void Input()
+{
+    int value = 1;
 
-## Test runner compatibility
-The test framework works with all test runners supported by xUnit.
+    Step.Current.Descriptor
+        .AddSubStep("Phase 1", () => { value = 2; })
+        .AddAsyncSubStep("Phase 2 (async)", async() => { await ... })
+        .Execute();
 
-There is a _known issue_ with the Resharper test runner: the tests do not show under the Summary method. This is being researched.
+    Assert.Equal(2, value);
+    value = 3;
 
-## Test case attributes
-The test framework uses attributes to identify test cases and their components:
-
-**TestCase**
-
-Identifies a test class as a test case. The classes not marked as such are ignored by the test runner.
-
-**Summary**
-
-Used as the 'entry point' of the test case, that can be discovered by the test runner. Each test case class must have exactly one test method marked as Summary.
-
-**Precondition**
-
-Identifies a precondition of the test case. There can be more than one.
-
-**Input**
-
-Identifies the input of a test case step. There can be more than one.
-
-**ExpectedResult**
-
-Identifies the expected result of a test case step. Each expected result is linked to an input, but an input does not have to have an expected result.
-
-### Setup and Cleanup
-**Setup**
-
-Used to identify methods that run before all of the other methods of the test case. There can be more than one.
-
-**Cleanup**
-
-Used to identify methods that run after all of the other methods of the test case have run, regardless of their outcome.
-
-These two are optional, as this behavior is already implemented in Xunit using class constructor and Dispose. These should be used only if we need the test methods to show in the test report. 
-
-I.e. consider a scenario in which the setup can take a long time to execute. If `[Setup]` is used then this will show as a test on the test report.
-
-## Test case execution
-The test framework preserves all of xUnit's features related to sharing context between tests (see https://xunit.github.io/docs/shared-context.html). Therefore let's leave fixtures out of this.
-
-Here's what happens when the Summary method is executed:
-1. The test case instance is created. _This will be shared between all tests_.
-2. The tests are discovered.
-3. The tests are ordered by type: Setup < Precondition < Test steps (Input and ExpectedResult) < Cleanup.
-4. The tests grouped by type are ordered based on their definition. I.e. Precondition(1) < Precondition(2).
-5. The test steps are ordered by test step. I.e. Input(2) < ExpectedResult(2) < Input(3).
-6. The tests are run in order. If one fails then the next tests are *skipped*, except the Cleanup tests.
-7. The Summary is executed. If one of the tests failed then the Summary fails with error: _The test case steps were not completed successfully_
-7. The test case instance is disposed.
-
-Note: The tests may execute on different threads, although not in parallel.
-
-## Parallelism
-The test framework has the same behavior as xUnit, with one exception: _test cases that are in the same collection run in parallel_, unless specified otherwise. This behavior can be customized using test case collection options. This example shows how to revert to xUnit's behavior:
-
-```C#
-[CollectionDefinition("Sequential")]
-[TestCaseCollectionOptions(ExecutionMode = TestCaseExecutionMode.Sequential)]
-public class CollectionDefinition : ICollectionFixture<CollectionFixture> { }
-
-[Collection("Sequential")]
-[TestCase] public class TestCase1 {}
-
-[Collection("Sequential")]
-[TestCase] public class TestCase2 {}
+    Step.Current.Descriptor
+        .ExecuteubStep("Phase 3", () => { Assert.Equal(3, value); })
+        .ExecuteAsyncSubStep("Phase 4 (async)", async() =>  { await ... });
+}
 ```
+This is similar to the way steps are added to the current test case. 
+There is a difference though: the execution of the sub-steps can be mixed with the execution of the current step, by calling `Execute` methods. This allows executing a sequence of sub-steps or even one sub-step at a time.
 
-Note: it is a common scenario for more test cases to share a context, which is implemented as xUnit collection fixture. This implies the use of a collection definition and this way the test cases get to be part of the same collection, although they are in different classes.
+If no `Execute` method is called after adding all sub-steps, then the test framework executes all of them in order. 
 
-## Assertions in expected results
-Sometimes expected results may consist of more than one assertions whose outcomes determine if the test step passes or fails. I.e. consider a basic test case such as:
+If a sub-step fails before other sub-steps are executed, then the other sub-steps are executed as skipped tests (unless the failed sub-step is a verification, see below).
+
+### Assertions and verifications
+These are special sub-steps used in `ExpectedResult` steps when they consist of multiple assertions whose outcomes determine if the test step passes or fails.
+
+For example, consider a basic test case such as:
 ```
 Precondition: User logs in
 Input: User goes to the Profile page
@@ -157,110 +222,98 @@ Expected result: The user display name and email are correct
 
 The expected result verifies 2 things: the user display name and the email address. They both need to be correct for the test to pass. They both need to be visible in the test report, in case one of them fails. The failure may be considered critical, or not.
 
-### Assertions
-For the above test case, assume that when either of the user display name / email is incorrect then the other one does not need to be verified - the test fails anyways. This can be written as:
+#### Assertions
+For the above test case, assume that when either of the user display name / email is incorrect then the other one does not need to be verified - the test fails anyway. This can be written as:
 ```C#
-[ExpectedResult]
 private void ExpectedResult()
 {
-	TestStep.Current.ExpectedResult
-		.Assert("Expect the user display name is correct", () => Assert.[...])
-		.Assert("Expect the email is correct", () => Assert.[...]);
+    ExpectedResultStep.Current.Descriptor
+        .Assert("Expect the user display name is correct", () => Assert.[...])
+        .AssertAsync("Expect the email is correct", async () => 
+        { 
+            await ...  
+            Assert.[...]
+        });
 }
 ```
 This code produces two tests for the test step. 
 
 When they both pass then the test report contains:
 ```
-[3/3] Expected result: 1. The user display name and email are correct - passed
+[3/3] Expected result] 1. The user display name and email are correct - passed
 [3/3] [Expected result] 1.1. Expect the user display name is correct - passed
 [3/3] [Expected result] 1.2. Expect the email is correct - passed
 ```
 
 When an assertion fails then the failure is shown in the test report, the next assertions are not executed at all, and the test step fails with a specific error. I.e. when the user display name is not correct:
 ```
-[3/3] Expected result: 1. The user display name and email are correct - failed: One or more of the expected results did not match. 1 assertion(s) were skipped.
+[3/3] [Expected result] 1. The user display name and email are correct - failed: One or more of the expected results did not match. 1 assertion(s) were skipped.
 [3/3] [Expected result] 1.1. Expect the user display name is correct - failed
 ```
 
-### Verifications
+#### Verifications
 For the above test case, assume that when one of the user display name / email is incorrect then the other needs to be checked too before the test fails. This can be written as:
 ```C#
 [ExpectedResult]
 private void ExpectedResult()
 {
-	TestStep.Current.ExpectedResult
-		.Verify("Expect the user display name is correct", () => Assert.[...])
-		.Verify("Expect the email is correct", () => Assert.[...]);
+    ExpectedResultStep.Current.Descriptor
+       .Verify("Expect the user display name is correct", () => Assert.[...])
+       .VerifyAsync("Expect the email is correct", async () => 
+        { 
+            await ...  
+            Assert.[...]
+        });
 }
 ```
-When a verification fails then the failure is shown in the test report and the next assertion/verification is executed. I.e. when the user display name is not correct but the email is, then:
+When a verification fails, then the failure is shown in the test report and the next assertion/verification is executed. I.e. when the user display name is not correct but the email is, then:
 ```
-[3/3] Expected result: 1. The user display name and email are correct - failed: One or more of the expected results did not match
+[3/3] [Expected result] 1. The user display name and email are correct - failed: One or more of the expected results did not match
 [3/3] [Expected result] 1.1. Expect the user display name is correct - failed
 [3/3] [Expected result] 1.2. Expect the email is correct - passed
 ```
 
-### Execution
-Assertions and verifications are executed as soon as possible, on the same thread as the rest of the method. I.e. given the above test method, the order of execution is:
-1. Call 1st Verify
-2. Call 1st delegate
-3. Call 2nd Verify
-4. Call 2nd delegate
-
-For asserts it is slighly different. As soon as a delegate throws, the next delegates are not called anymore but their assertions continue to be called in order to track how many assertions were skipped.
-
 ## Other features
 
 ### Readability
-All of the test case attributes support specifying a description that shows in the test report. This is optional though.
+The `[Summary]` attribute supports specifying a description that is used as the test display name.
 
-If the description is missing then the method name is used - but not as is. It is 'humanized' using https://github.com/Humanizr/Humanizer.
+If this description is missing then the method name is used - but not as is. It is 'humanized' using https://github.com/Humanizr/Humanizer.
 
 ```C#
 [Summary]
-public void LoginToWebSite() {...}
+public void LoginToWebsite() {...}
 ```
-The name of this test as shown in the test report will be "Login to web site".
+The name of this test as shown in the test report will be "Log in to website".
 
-Also, all of the test case attributes support specifying the order in which the test is run. If not specified then this defaults to `1`. 
-This can work for simple test cases such as:
-```C#
-[TestCase] public class TestCase 
+### Events
+The test framework raises events that the user code can handle using `EventSource.Instance`.
+
+For example, consider this scoped class:
+```c#
+using Automation.TestFramework.Dynamic; // needed for EventSource
+
+public class EventHandlers : IDisposable
 {
-	[Summary] public void Summary() { }
-	[Precondition] private void Precondition() { }
-	[Input] private void Input() { } 
-	[ExpectedResult] private void ExpectedResult() { }
+    public EventHandlers()
+    {
+        EventSource.Instance.StepError += OnStepError;
+    }
+
+    public void Dispose()
+    {
+        EventSource.Instance.StepError -= OnStepError;
+    }
+
+    private void OnStepError(object sender, Exception e)
+    {
+        // semder is the instance used to invoke the step method or closure, or null if static
+        // e is the exception
+    }
 }
 ```
-
-### Notifications
-Notifications allow the user to access the exception that caused the test to fail, at that time (not later). To enable notifications:
-1. Create a class that implements interface `ITestNotification`:
-```C#
-public class MyTestNotification : ITestNotification
-{
-	public MyTestNotification(object testClassInstance) {...} // constructor must have this signature
-
-	public void OnError(Exception error) {...} // the exception
-}
-```
-2. Use attributes to configure this using attributes:
-```C#
-[assembly: TestNotification(typeof(MyTestNotification))] // to enable for all test cases in the assembly
-// OR
-[TestCase("TC001")]
-[TestNotification(typeof(MyTestNotification)] // to enable for this specific test case
-public class TestCase1 {...}
-```
-When the exception occurs, the test frameowrk will create an instance of `MyTestNotification` and pass it the test case instance. This context should be enough for the user to observe the exception. Note that the exception _cannot be handled_ and it will be rethrown regardless what the notification does.
-
-### Assembly fixtures
-Assembly fixtures are created before any of the tests in the assembly are run, similar to xUnit's collection fixtures. 
-Use attributes to specify them:
-```C#
-[assembly: AssemblyFixture(typeof(AssemblyFixtureClass))]
-```
-
-Note: this is copied from xUnit's Sample project.
+This class can be used with any of the xUnit fixtures, such as:
+- `AssemblyFixture(Type)`
+- `ICollectionFixture<>`
+- `IClassFixture<>
+`
