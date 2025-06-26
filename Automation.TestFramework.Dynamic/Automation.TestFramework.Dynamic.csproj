@@ -12,7 +12,7 @@
         <PackageId>Automation.TestFramework.Dynamic</PackageId>
         <VersionPrefix>1.0.1</VersionPrefix>
 <!--        <VersionSuffix>pre.1</VersionSuffix>-->
-        <PackageReleaseNotes>First release based on xunit.v3</PackageReleaseNotes>
+        <PackageReleaseNotes>Fixed crash when using `dotnet test`.</PackageReleaseNotes>
         <Authors>DotNet4Fun</Authors>
         <Product>Automation.TestFramework.Dynamic</Product>
         <Title>Automation.TestFramework.Dynamic</Title>
