@@ -10,8 +10,8 @@
 
     <PropertyGroup Label="NuGet package properties">
         <PackageId>Automation.TestFramework.Dynamic</PackageId>
-        <VersionPrefix>1.0.0</VersionPrefix>
-<!--        <VersionSuffix>rc.2</VersionSuffix>-->
+        <VersionPrefix>1.0.1</VersionPrefix>
+<!--        <VersionSuffix>pre.1</VersionSuffix>-->
         <PackageReleaseNotes>First release based on xunit.v3</PackageReleaseNotes>
         <Authors>DotNet4Fun</Authors>
         <Product>Automation.TestFramework.Dynamic</Product>
