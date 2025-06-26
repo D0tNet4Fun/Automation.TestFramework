@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,8 +8,7 @@ using Xunit.v3;
 
 namespace Automation.TestFramework.Dynamic.ObjectModel;
 
-internal class TestCase(XunitTestCase xtc, string displayName)
-    : XunitTestCase(xtc.TestMethod, displayName, xtc.UniqueID, xtc.Explicit, xtc.SkipExceptions, xtc.SkipReason, xtc.SkipType, xtc.SkipUnless, xtc.SkipWhen, xtc.Traits, xtc.TestMethodArguments, xtc.SourceFilePath, xtc.SourceLineNumber, xtc.Timeout),
+internal class TestCase : XunitTestCase,
     IDynamicTestCase, ITestCase, ISelfExecutingXunitTestCase
 {
     /// <summary>
@@ -17,13 +17,23 @@ internal class TestCase(XunitTestCase xtc, string displayName)
     private int _nextTestIndex = 1;
     private readonly TestCaseDescriptor _descriptor = new();
 
+    [Obsolete("Called by the de-serializer; should only be called by derived classes.")]
+    public TestCase()
+    {
+    }
+
+    public TestCase(XunitTestCase xtc, string displayName)
+        : base(xtc.TestMethod, displayName, xtc.UniqueID, xtc.Explicit, xtc.SkipExceptions, xtc.SkipReason, xtc.SkipType, xtc.SkipUnless, xtc.SkipWhen, xtc.Traits, xtc.TestMethodArguments, xtc.SourceFilePath, xtc.SourceLineNumber, xtc.Timeout)
+    {
+    }
+
     public static ITestCase Current => (ITestCase)TestFramework.TestCase.Current;
 
     public ITestCaseDescriptor Descriptor => _descriptor;
     public int StepCount => _descriptor.StepCount;
     public IReadOnlyCollection<Step> GetSteps() => _descriptor.GetSteps();
 
-    public string GetNextDynamicTestUniqueId() => UniqueIDGenerator.ForTest(xtc.UniqueID, _nextTestIndex++);
+    public string GetNextDynamicTestUniqueId() => UniqueIDGenerator.ForTest(UniqueID, _nextTestIndex++);
 
     public override void PreInvoke()
     {
