@@ -10,9 +10,9 @@
 
     <PropertyGroup Label="NuGet package properties">
         <PackageId>Automation.TestFramework.Dynamic</PackageId>
-        <VersionPrefix>1.0.1</VersionPrefix>
+        <VersionPrefix>1.0.2</VersionPrefix>
 <!--        <VersionSuffix>pre.1</VersionSuffix>-->
-        <PackageReleaseNotes>Fixed crash when using `dotnet test`.</PackageReleaseNotes>
+        <PackageReleaseNotes>Fixed bug: raise `StepError` event when a step fails because of sub-steps.</PackageReleaseNotes>
         <Authors>DotNet4Fun</Authors>
         <Product>Automation.TestFramework.Dynamic</Product>
         <Title>Automation.TestFramework.Dynamic</Title>
