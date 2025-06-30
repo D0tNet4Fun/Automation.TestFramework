@@ -56,19 +56,21 @@ internal class StepRunner : DynamicTestRunnerBase<StepRunnerContext>
                 ctxt.Aggregator.Run(() => ctxt.Step.Descriptor.Execute()));
         }
 
-        if (ctxt.Aggregator.HasExceptions)
-        {
-            TryRaiseErrorEvent(ctxt.TestClassInstance, ctxt.Aggregator.ToException()!);
-        }
-
         if (ctxt.SubStepsRunSummary is not null)
         {
             var runSummary = ctxt.SubStepsRunSummary.Value;
             var hasErrors = runSummary.Failed > 0 || runSummary.Skipped > 0 || runSummary.NotRun > 0;
             if (hasErrors)
             {
-                ctxt.Aggregator.Add(new StepFailedException("One or more errors occurred while running this step."));
+                ctxt.Aggregator.Run(() =>
+                    throw new StepFailedException($"One or more errors occurred while running this step."));
             }
+        }
+
+        if (ctxt.Aggregator.HasExceptions)
+        {
+            // note: most likely this is the StepFailedException added above, otherwise the aggregator is cleared by xunit after each test 
+            TryRaiseErrorEvent(ctxt.TestClassInstance, ctxt.Aggregator.ToException()!);
         }
 
         return elapsed;
