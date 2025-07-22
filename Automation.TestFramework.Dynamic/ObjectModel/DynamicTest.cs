@@ -40,6 +40,9 @@ internal class DynamicTest : IDynamicTest
     public string UniqueID { get; }
     public bool Explicit => false;
     public string? SkipReason { get; set; }
+    public Type? SkipType { get; set; }
+    public string? SkipUnless { get; set; }
+    public string? SkipWhen { get; set; }
     public IXunitTestCase TestCase { get; }
     public IXunitTestMethod TestMethod { get; }
     public object?[] TestMethodArguments => NoTestMethodArguments;
