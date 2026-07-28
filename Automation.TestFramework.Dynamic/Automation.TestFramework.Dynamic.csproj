@@ -10,14 +10,14 @@
 
     <PropertyGroup Label="NuGet package properties">
         <PackageId>Automation.TestFramework.Dynamic</PackageId>
-        <VersionPrefix>1.0.2</VersionPrefix>
+        <VersionPrefix>1.0.3</VersionPrefix>
 <!--        <VersionSuffix>pre.1</VersionSuffix>-->
-        <PackageReleaseNotes>Fixed bug: raise `StepError` event when a step fails because of sub-steps.</PackageReleaseNotes>
+        <PackageReleaseNotes>Support xunit v3 3.x</PackageReleaseNotes>
         <Authors>DotNet4Fun</Authors>
         <Product>Automation.TestFramework.Dynamic</Product>
         <Title>Automation.TestFramework.Dynamic</Title>
         <Description>Xunit-based test framework for automating test cases. Supports .NET Standard 2.0, .NET 6.0+ and .NET Framework 4.7.2+.</Description>
-        <Copyright>Copyright © 2025 DotNet4Fun</Copyright>
+        <Copyright>Copyright © 2026 DotNet4Fun</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>xunit automation</PackageTags>
         <MinClientVersion>2.12</MinClientVersion>
@@ -28,7 +28,7 @@
 
     <ItemGroup>
         <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-        <PackageReference Include="xunit.v3.extensibility.core" Version="2.0.3" />
+        <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.2" />
     </ItemGroup>
 
     <ItemGroup>
